@@ -3775,6 +3775,11 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
+ngx-deploy-npm@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/ngx-deploy-npm/-/ngx-deploy-npm-7.0.1.tgz#de6d3864d4ddf9db6c2641b4f948f8cd7acb4c43"
+  integrity sha512-YQmYx8ZxnhsGdpLMocIsmvVdV/bnsPNNOZALjJxNyfYomLpJ+OIlMPCVUM3QWA7Lxw8P9GZ+yITeavoBInEkBA==
+
 node-addon-api@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-3.2.1.tgz#81325e0a2117789c0128dab65e7e38f07ceba161"

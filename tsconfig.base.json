@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "packages/lit-listener": ["packages/lit-listener/src/index.ts"],
-      "packages/types": ["packages/types/src/index.ts"],
+      "packages/types": ["packages/types/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

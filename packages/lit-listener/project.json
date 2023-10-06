@@ -1,5 +1,5 @@
 {
-  "name": "packages/lit-listener",
+  "name": "lit-listener",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/lit-listener/src",
   "projectType": "library",
@@ -36,6 +36,12 @@
           "ci": true,
           "codeCoverage": true
         }
+      }
+    },
+    "deploy": {
+      "executor": "ngx-deploy-npm:deploy",
+      "options": {
+        "access": "public"
       }
     }
   },
