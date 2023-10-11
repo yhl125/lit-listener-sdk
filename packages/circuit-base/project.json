@@ -1,17 +1,17 @@
 {
-  "name": "lit-listener",
+  "name": "circuit-base",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/lit-listener/src",
+  "sourceRoot": "packages/circuit-base/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/lit-listener",
-        "main": "packages/lit-listener/src/index.ts",
-        "tsConfig": "packages/lit-listener/tsconfig.lib.json",
-        "assets": ["packages/lit-listener/*.md"]
+        "outputPath": "dist/packages/circuit-base",
+        "main": "packages/circuit-base/src/index.ts",
+        "tsConfig": "packages/circuit-base/tsconfig.lib.json",
+        "assets": ["packages/circuit-base/*.md"]
       }
     },
     "lint": {
@@ -19,8 +19,8 @@
       "outputs": ["{options.outputFile}"],
       "options": {
         "lintFilePatterns": [
-          "packages/lit-listener/**/*.ts",
-          "packages/lit-listener/package.json"
+          "packages/circuit-base/**/*.ts",
+          "packages/circuit-base/package.json"
         ]
       }
     },
@@ -28,7 +28,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/lit-listener/jest.config.ts",
+        "jestConfig": "packages/circuit-base/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {

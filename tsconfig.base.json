@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "packages/lit-listener": ["packages/lit-listener/src/index.ts"],
+      "packages/circuit-base": ["packages/circuit-base/src/index.ts"],
       "packages/types": ["packages/types/src/index.ts"]
     }
   },

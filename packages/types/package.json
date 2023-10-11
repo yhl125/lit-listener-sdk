@@ -1,5 +1,5 @@
 {
-  "name": "@yhl125/lit-listener-types",
+  "name": "@lit-listener-sdk/types",
   "version": "0.0.1",
   "dependencies": {},
   "type": "commonjs",

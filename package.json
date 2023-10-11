@@ -1,5 +1,5 @@
 {
-  "name": "lit-listener-sdk",
+  "name": "@lit-listener-sdk/lit-listener-sdk",
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {},

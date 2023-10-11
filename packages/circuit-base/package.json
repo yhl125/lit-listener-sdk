@@ -1,5 +1,5 @@
 {
-  "name": "@yhl125/lit-listener-sdk",
+  "name": "@lit-listener-sdk/circuit-base",
   "version": "0.0.1",
   "dependencies": {},
   "type": "commonjs",
