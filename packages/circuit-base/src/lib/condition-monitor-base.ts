@@ -66,7 +66,7 @@ export abstract class ConditionMonitorBase extends EventEmitter {
         }
         await this.checkAgainstExpected(condition, value);
       } catch (error) {
-        this.emit('conditionError', error, condition);
+        this.emit('conditionError', JSON.stringify(error), condition);
         throw new Error(`Error in Webhook Action: ${error}`);
       }
     };
@@ -124,9 +124,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
 
     try {
       if (match) {
-        this.emit('conditionMatched', emittedValue);
+        this.emit('conditionMatched', condition.id, emittedValue);
       } else {
-        this.emit('conditionNotMatched', emittedValue);
+        this.emit('conditionNotMatched', condition.id, emittedValue);
       }
     } catch (error: unknown) {
       throw new Error(`Error in Checking Against Expected Values: ${error}`);

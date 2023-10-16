@@ -1,6 +1,7 @@
 import { Abi, Transport } from 'viem';
 
 export interface ICondition {
+  id: string;
   expectedValue:
     | number
     | string
@@ -18,9 +19,7 @@ export interface IWebhookCondition extends ICondition {
 }
 
 export class WebhookCondition implements IWebhookCondition {
-  id?: string;
-  sdkOnMatched?: () => Promise<void>;
-  sdkOnUnMatched?: () => Promise<void>;
+  id: string;
 
   constructor(
     public baseUrl: string,
@@ -34,7 +33,9 @@ export class WebhookCondition implements IWebhookCondition {
       | (string | number | bigint | object)[],
     public matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=',
     public apiKey?: string,
-  ) {}
+  ) {
+    this.id = crypto.randomUUID();
+  }
 }
 
 export interface IViemContractCondition extends ICondition {
@@ -53,9 +54,7 @@ export interface IViemContractCondition extends ICondition {
 }
 
 export class ViemContractCondition implements IViemContractCondition {
-  id?: string;
-  sdkOnMatched?: () => Promise<void>;
-  sdkOnUnMatched?: () => Promise<void>;
+  id: string;
 
   constructor(
     public contractAddress: `0x${string}`,
@@ -70,5 +69,7 @@ export class ViemContractCondition implements IViemContractCondition {
       | object
       | (string | number | bigint | object)[],
     public matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=',
-  ) {}
+  ) {
+    this.id = crypto.randomUUID();
+  }
 }
