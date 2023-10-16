@@ -1,1 +1,2 @@
-export * from './lib/packages/circuit-base';
+export * from './lib/circuit-base';
+export * from './lib/condition-monitor-base';

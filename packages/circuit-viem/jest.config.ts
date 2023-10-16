@@ -1,11 +1,11 @@
 /* eslint-disable */
 export default {
-  displayName: 'circuit-base',
+  displayName: 'circuit-viem',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/packages/circuit-base',
+  coverageDirectory: '../../coverage/packages/circuit-viem',
 };

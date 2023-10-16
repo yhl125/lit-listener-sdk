@@ -39,11 +39,8 @@ export class WebhookCondition implements IWebhookCondition {
 }
 
 export interface IViemContractCondition extends ICondition {
-  contractAddress: `0x${string}`;
   abi: Abi;
   transport: Transport;
-  eventName: string;
-  eventArgName: string[];
   expectedValue:
     | number
     | string
@@ -51,17 +48,17 @@ export interface IViemContractCondition extends ICondition {
     | object
     | (string | number | bigint | object)[];
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+  contractAddress?: `0x${string}`;
+  eventName?: string;
+  eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
 }
 
 export class ViemContractCondition implements IViemContractCondition {
   id: string;
 
   constructor(
-    public contractAddress: `0x${string}`,
     public abi: Abi,
     public transport: Transport,
-    public eventName: string,
-    public eventArgName: string[],
     public expectedValue:
       | number
       | string
@@ -69,6 +66,9 @@ export class ViemContractCondition implements IViemContractCondition {
       | object
       | (string | number | bigint | object)[],
     public matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=',
+    public contractAddress?: `0x${string}`,
+    public eventName?: string,
+    public eventArgs?: readonly unknown[] | Record<string, unknown> | undefined,
   ) {
     this.id = crypto.randomUUID();
   }

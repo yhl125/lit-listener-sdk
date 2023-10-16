@@ -33,11 +33,11 @@ export abstract class ConditionMonitorBase extends EventEmitter {
   /**
    * @method startMonitoringWebHook
    * @description Starts monitoring a webhook condition.
-   * @private
+   * @protected
    * @param condition - The webhook condition to monitor.
    * @throws {Error} If an error occurs while retrieving webhook information.
    */
-  private startMonitoringWebHook = async (condition: WebhookCondition) => {
+  protected startMonitoringWebHook = async (condition: WebhookCondition) => {
     // Monitor function, encapsulates the logic of querying the webhook and checking the response against the expected value.
     const webhookListener = async () => {
       try {
@@ -77,12 +77,12 @@ export abstract class ConditionMonitorBase extends EventEmitter {
   /**
    * @method checkAgainstExpected
    * @description Checks the emitted value against the expected value and triggers the appropriate callbacks.
-   * @private
+   * @protected
    * @param condition - The condition being checked.
    * @param emittedValue - The value emitted by the webhook or contract event.
    * @throws {Error} If an error occurs while running match or unmatch.
    */
-  private checkAgainstExpected = async (
+  protected checkAgainstExpected = async (
     condition: ICondition,
     emittedValue:
       | number
@@ -215,7 +215,7 @@ export abstract class ConditionMonitorBase extends EventEmitter {
    * @param errorHandlingModeStrict - The error handling mode (default: false).
    * @returns - Promise resolving when the function has succeeded or the retry limit is reached.
    */
-  private retry = async (
+  protected retry = async (
     fn: () => Promise<void>,
     retryCount: number = 3,
     errorHandlingModeStrict: boolean,
