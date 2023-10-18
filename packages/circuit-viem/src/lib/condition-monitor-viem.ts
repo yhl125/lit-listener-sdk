@@ -58,8 +58,11 @@ export class ConditionMonitorViem extends ConditionMonitorBase {
 
       return unwatch;
     } catch (error) {
-      this.emit('conditionError', error, condition);
-      throw new Error(`Error in Contract Action: ${error}`);
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      this.emit('conditionError', message, condition);
+      throw new Error(`Error in Contract Action: ${message}`);
     }
   };
 }

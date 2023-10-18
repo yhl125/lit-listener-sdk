@@ -1,51 +1,56 @@
+import { AccessList, Address, Chain, Hex, Transport } from 'viem';
+
 export interface IAction {
   type: string;
-  priority: number;
 }
 
-export interface FetchAction extends IAction {
-  /**
-   * The type of the action, always "fetch" for this interface.
-   */
-  type: 'fetch';
-  /**
-   * A numerical value representing the priority of the action. The lower the value, the higher the priority.
-   */
-  priority: number;
+export interface FetchActionBase extends IAction {
   /**
    * The base URL of the API endpoint.
    */
-  baseUrl: string;
+  url: string;
   /**
-   * The specific endpoint to fetch.
+   * Optional init for fetch.
    */
-  endpoint: string;
+  init?: RequestInit;
   /**
    * The path to access the expected value in the response body.
    */
   responsePath: string;
-  /**
-   * Optional API key for authorization.
-   */
-  apiKey?: string;
-  /**
-   * Optional data to sign. If left blank the returned response will be signed.
-   */
-  toSign?: Uint8Array;
-  /**
-   * The condition under which to sign the data.
-   */
-  signCondition?: {
-    type: '&&' | '||';
-    operator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    value:
-      | number
-      | string
-      | bigint
-      | string[]
-      | number[]
-      | bigint[]
-      | undefined
-      | (string | number | bigint)[];
-  }[];
+}
+
+export interface ViemTransaction {
+  to: Address;
+  accessList?: AccessList;
+  chain?: Chain;
+  data?: Hex;
+  gasPrice?: bigint;
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
+  nonce?: number;
+  value?: bigint;
+}
+
+export interface FetchActionViemTransaction extends FetchActionBase {
+  type: 'fetch-viem';
+  chain: Chain;
+  transport: Transport;
+}
+
+export interface ViemTransactionAction extends IAction, ViemTransaction {
+  type: 'viem';
+  chain: Chain;
+  transport: Transport;
+}
+
+export function isFetchActionViemTransaction(
+  action: IAction,
+): action is FetchActionViemTransaction {
+  return action.type === 'fetch-viem';
+}
+
+export function isViemTransactionAction(
+  action: IAction,
+): action is ViemTransactionAction {
+  return action.type === 'viem';
 }

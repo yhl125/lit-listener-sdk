@@ -5,6 +5,7 @@ import {
   IAction,
   ICondition,
   IConditionalLogic,
+  IExecutionConstraints,
   ILogEntry,
   LogCategory,
   RunStatus,
@@ -28,11 +29,6 @@ export abstract class CircuitBase extends EventEmitter {
    */
   private conditions: ICondition[] = [];
   /**
-   * Stores pending promise broadcasts for clean up.
-   * @private
-   */
-  private pendingBroadcasts: Promise<PromiseSettledResult<void>[]>[] = [];
-  /**
    * The condition monitor instance.
    * @private
    */
@@ -49,9 +45,9 @@ export abstract class CircuitBase extends EventEmitter {
   private satisfiedConditions: Set<string> = new Set();
   /**
    * The array of actions to be executed.
-   * @private
+   * @protected
    */
-  private actions: IAction[] = [];
+  protected actions: IAction[] = [];
   /**
    * The count of executed actions.
    * @private
@@ -59,9 +55,9 @@ export abstract class CircuitBase extends EventEmitter {
   private conditionExecutedCount: number = 0;
   /**
    * The count of successfully completed actions.
-   * @private
+   * @protected
    */
-  private litActionCompletionCount: number = 0;
+  protected litActionCompletionCount: number = 0;
   /**
    * The maximum number of executions allowed.
    * @private
@@ -103,20 +99,20 @@ export abstract class CircuitBase extends EventEmitter {
    */
   private secureKey?: string;
   /**
-   * The public key of the PKP contract.
-   * @private
+   * The public key of the PKP.
+   * @protected
    */
-  private publicKey: `0x04${string}` | string;
+  protected pkpPubKey: string;
   /**
    * The authentication signature for executing Lit Actions.
-   * @private
+   * @protected
    */
-  private authSig?: AuthSig;
+  protected authSig?: AuthSig;
   /**
    * The session signature for executing Lit Actions.
-   * @private
+   * @protected
    */
-  private sessionSigs?: SessionSigs;
+  protected sessionSigs?: SessionSigs;
   /**
    * Flag indicating if the action helper function has been set.
    * @private
@@ -134,49 +130,61 @@ export abstract class CircuitBase extends EventEmitter {
   private emitter = new EventEmitter();
   /**
    * Flag indicating whether to strict error throwing is enabled.
-   * @private
+   * @protected
    */
-  private errorHandlingModeStrict: boolean = false;
+  protected errorHandlingModeStrict: boolean = false;
 
   /**
    * Creates an instance of Circuit.
    * @param pkpContractAddress The address of the PKPNFT contract.
    * @param errorHandlingModeStrict Strict error handling enabled or not.
    */
-  constructor(
-    monitor: ConditionMonitorBase,
-    errorHandlingModeStrict: boolean = false,
-    litNetwork: LIT_NETWORKS_KEYS = 'serrano',
-    publicKey: `0x04${string}` | string,
-    authSig?: AuthSig,
-    sessionSigs?: SessionSigs,
-    secureKey?: string,
-  ) {
-    if (!authSig && !sessionSigs) {
+  constructor(args: {
+    monitor: ConditionMonitorBase;
+    errorHandlingModeStrict: boolean;
+    litNetwork: LIT_NETWORKS_KEYS;
+    pkpPubKey: string;
+    conditions: ICondition[];
+    conditionalLogic: IConditionalLogic;
+    options: IExecutionConstraints;
+    actions: IAction[];
+    authSig?: AuthSig;
+    sessionSigs?: SessionSigs;
+    secureKey?: string;
+  }) {
+    if (!args.authSig && !args.sessionSigs) {
       throw new Error(
         'Either authSig or sessionSigs must be provided to create a circuit.',
       );
     }
     super();
-    this.errorHandlingModeStrict = errorHandlingModeStrict;
+    this.errorHandlingModeStrict = args.errorHandlingModeStrict;
+    args.litNetwork;
     this.litClient = new LitJsSdk.LitNodeClient({
-      litNetwork,
+      litNetwork: args.litNetwork,
       debug: false,
     });
-    this.publicKey = publicKey;
-    if (authSig) {
-      this.authSig = authSig;
+    this.pkpPubKey = args.pkpPubKey;
+    if (args.authSig) {
+      this.authSig = args.authSig;
     }
-    if (sessionSigs) {
-      this.sessionSigs = sessionSigs;
+    if (args.sessionSigs) {
+      this.sessionSigs = args.sessionSigs;
     }
-    if (secureKey) {
-      this.secureKey = secureKey;
+    if (args.secureKey) {
+      this.secureKey = args.secureKey;
       this.useSecureKey = true;
     }
 
-    this.monitor = monitor;
-    this.conditionalLogic = { type: 'EVERY', interval: 1800000 };
+    this.conditions = args.conditions;
+    this.conditionalLogic = args.conditionalLogic;
+    this.conditionMonitorExecutions = args.options.conditionMonitorExecutions;
+    this.startDate = args.options.startDate;
+    this.endDate = args.options.endDate;
+    this.maxLitActionCompletions = args.options.maxLitActionCompletions;
+    this.actions = args.actions;
+
+    this.monitor = args.monitor;
     this.monitor.on(
       'conditionMatched',
       (
@@ -247,10 +255,9 @@ export abstract class CircuitBase extends EventEmitter {
    * @param ipfsCID The IPFS CID of the Lit Action code.
    * @param authSig Optional. The authentication signature for executing Lit Actions.
    * @param secureKey Optional. The secureKey required to run the LitAction if set during setActions.
-   * @param broadcast Optional. Boolean to broadcast signed contract actions on-chain.
    * @throws {Error} If an error occurs while running the circuit.
    */
-  start = async ({ broadcast }: { broadcast: boolean }): Promise<void> => {
+  start = async (): Promise<void> => {
     if (this.isRunning) {
       throw new Error('Circuit is already running');
     }
@@ -300,7 +307,6 @@ export abstract class CircuitBase extends EventEmitter {
               new Date().toISOString(),
             );
           }
-
           const conditionResBefore = this.checkConditionalLogicAndRun();
           const executionResBefore = this.checkExecutionLimitations();
 
@@ -315,7 +321,7 @@ export abstract class CircuitBase extends EventEmitter {
             conditionResBefore === RunStatus.ACTION_RUN &&
             executionResBefore === RunStatus.ACTION_RUN
           ) {
-            await this.runAction(broadcast);
+            await this.runActions();
             const executionResAfter = this.checkExecutionLimitations();
             if (executionResAfter === RunStatus.EXIT_RUN) {
               this.log(
@@ -371,15 +377,17 @@ export abstract class CircuitBase extends EventEmitter {
       } else if (this.actions.length < 1) {
         throw new Error(`Actions have not been set. Run setActions() first.`);
       }
-    } catch (err) {
-      throw new Error(`Error running circuit: ${err}`);
+    } catch (error) {
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      throw new Error(`Error running circuit: ${message}`);
     } finally {
-      await Promise.all(this.pendingBroadcasts.map((p) => p));
       this.isRunning = false;
     }
   };
 
-  abstract runAction(broadcast: boolean): Promise<void>;
+  abstract runActions(): Promise<void>;
 
   /**
    * Returns the logs of the circuit. 1000 logs are recorded on a rolling basis.
@@ -419,8 +427,11 @@ export abstract class CircuitBase extends EventEmitter {
   private connectLit = async (): Promise<void> => {
     try {
       await this.litClient.connect();
-    } catch (err) {
-      throw new Error(`Error connecting with LitJsSDK: ${err}`);
+    } catch (error) {
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      throw new Error(`Error connecting with LitJsSDK: ${message}`);
     }
   };
 
@@ -508,23 +519,19 @@ export abstract class CircuitBase extends EventEmitter {
    * @param message - The response object to log.
    * @param message - The iso date to log.
    */
-  private log = (
+  protected log = (
     category: LogCategory,
     message: string,
-    responseObject: string,
+    response: string,
     isoDate: string,
   ) => {
-    if (typeof responseObject === 'object') {
-      responseObject = JSON.stringify(responseObject);
-    }
-
-    this.logs[this.logIndex] = { category, message, responseObject, isoDate };
+    this.logs[this.logIndex] = { category, message, response, isoDate };
     this.logIndex = this.logIndex + 1;
     this.emit(
       'log',
       JSON.stringify({
         message,
-        responseObject,
+        response,
         isoDate,
       }),
     );

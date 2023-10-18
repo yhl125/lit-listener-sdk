@@ -19,22 +19,39 @@ export interface IWebhookCondition extends ICondition {
 }
 
 export class WebhookCondition implements IWebhookCondition {
-  id: string;
+  readonly id: string;
+  baseUrl: string;
+  endpoint: string;
+  responsePath: string;
+  expectedValue:
+    | number
+    | string
+    | bigint
+    | object
+    | (string | number | bigint | object)[];
+  matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+  apiKey?: string;
 
-  constructor(
-    public baseUrl: string,
-    public endpoint: string,
-    public responsePath: string,
-    public expectedValue:
+  constructor(args: {
+    baseUrl: string;
+    endpoint: string;
+    responsePath: string;
+    expectedValue:
       | number
       | string
       | bigint
       | object
-      | (string | number | bigint | object)[],
-    public matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=',
-    public apiKey?: string,
-  ) {
+      | (string | number | bigint | object)[];
+    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+    apiKey?: string;
+  }) {
     this.id = crypto.randomUUID();
+    this.baseUrl = args.baseUrl;
+    this.endpoint = args.endpoint;
+    this.responsePath = args.responsePath;
+    this.expectedValue = args.expectedValue;
+    this.matchOperator = args.matchOperator;
+    this.apiKey = args.apiKey;
   }
 }
 
@@ -54,22 +71,41 @@ export interface IViemContractCondition extends ICondition {
 }
 
 export class ViemContractCondition implements IViemContractCondition {
-  id: string;
+  readonly id: string;
+  abi: Abi;
+  transport: Transport;
+  expectedValue:
+    | number
+    | string
+    | bigint
+    | object
+    | (string | number | bigint | object)[];
+  matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+  contractAddress?: `0x${string}`;
+  eventName?: string;
+  eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
 
-  constructor(
-    public abi: Abi,
-    public transport: Transport,
-    public expectedValue:
+  constructor(args: {
+    abi: Abi;
+    transport: Transport;
+    expectedValue:
       | number
       | string
       | bigint
       | object
-      | (string | number | bigint | object)[],
-    public matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=',
-    public contractAddress?: `0x${string}`,
-    public eventName?: string,
-    public eventArgs?: readonly unknown[] | Record<string, unknown> | undefined,
-  ) {
+      | (string | number | bigint | object)[];
+    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+    contractAddress?: `0x${string}`;
+    eventName?: string;
+    eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+  }) {
     this.id = crypto.randomUUID();
+    this.abi = args.abi;
+    this.transport = args.transport;
+    this.expectedValue = args.expectedValue;
+    this.matchOperator = args.matchOperator;
+    this.contractAddress = args.contractAddress;
+    this.eventName = args.eventName;
+    this.eventArgs = args.eventArgs;
   }
 }

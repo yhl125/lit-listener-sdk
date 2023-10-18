@@ -66,8 +66,11 @@ export abstract class ConditionMonitorBase extends EventEmitter {
         }
         await this.checkAgainstExpected(condition, value);
       } catch (error) {
-        this.emit('conditionError', JSON.stringify(error), condition);
-        throw new Error(`Error in Webhook Action: ${error}`);
+        let message;
+        if (error instanceof Error) message = error.message;
+        else message = String(error);
+        this.emit('conditionError', message, condition);
+        throw new Error(`Error in Webhook Action: ${message}`);
       }
     };
 
@@ -128,8 +131,11 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       } else {
         this.emit('conditionNotMatched', condition.id, emittedValue);
       }
-    } catch (error: unknown) {
-      throw new Error(`Error in Checking Against Expected Values: ${error}`);
+    } catch (error) {
+      let message;
+      if (error instanceof Error) message = error.message;
+      else message = String(error);
+      throw new Error(`Error in Checking Against Expected Values: ${message}`);
     }
   };
 
@@ -225,13 +231,16 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       try {
         await fn();
         break;
-      } catch (err) {
+      } catch (error) {
+        let message;
+        if (error instanceof Error) message = error.message;
+        else message = String(error);
         if (errorHandlingModeStrict) {
-          this.emit('conditionError', err, condition);
-          throw new Error(`Error in checking conditions: ${err}`);
+          this.emit('conditionError', message, condition);
+          throw new Error(`Error in checking conditions: ${message}`);
         } else {
           if (i === retryCount - 1) {
-            this.emit('conditionNotMatched', err);
+            this.emit('conditionNotMatched', message);
           }
         }
       }

@@ -26,6 +26,6 @@ export enum LogCategory {
 export interface ILogEntry {
   category: LogCategory;
   message: string;
-  responseObject: string;
+  response: string;
   isoDate: string;
 }
