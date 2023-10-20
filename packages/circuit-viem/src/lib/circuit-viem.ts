@@ -17,7 +17,6 @@ import { createWalletClient } from 'viem';
 
 export class CircuitViem extends CircuitBase {
   constructor(args: {
-    errorHandlingModeStrict: boolean;
     litNetwork: LIT_NETWORKS_KEYS;
     pkpPubKey: string;
     conditions: ICondition[];
@@ -30,7 +29,6 @@ export class CircuitViem extends CircuitBase {
   }) {
     super({
       monitor: new ConditionMonitorViem(),
-      errorHandlingModeStrict: args.errorHandlingModeStrict,
       litNetwork: args.litNetwork,
       pkpPubKey: args.pkpPubKey,
       conditions: args.conditions,
@@ -171,9 +169,6 @@ export class CircuitViem extends CircuitBase {
         message,
         new Date().toISOString(),
       );
-      if (this.errorHandlingModeStrict) {
-        throw new Error(`Error running Lit Action: ${error}`);
-      }
     }
   }
 }

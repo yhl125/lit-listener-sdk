@@ -16,17 +16,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
    * @description Accepts a condition and starts monitoring it.
    * @param condition - The condition to monitor.
    */
-  createCondition = async (
-    condition: ICondition,
-    errorHandlingModeStrict: boolean,
-  ) => {
+  createCondition = async (condition: ICondition) => {
     if (condition instanceof WebhookCondition) {
-      await this.retry(
-        () => this.startMonitoringWebHook(condition),
-        3,
-        errorHandlingModeStrict,
-        condition,
-      );
+      await this.startMonitoringWebHook(condition);
     }
   };
 
@@ -97,9 +89,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
     let match = false;
 
     if (
-      typeof condition.expectedValue === 'number' ||
-      typeof condition.expectedValue === 'string' ||
-      typeof condition.expectedValue === 'bigint'
+      typeof emittedValue === 'number' ||
+      typeof emittedValue === 'string' ||
+      typeof emittedValue === 'bigint'
     ) {
       match = this.compareValues(
         condition.expectedValue,
@@ -118,6 +110,13 @@ export abstract class ConditionMonitorBase extends EventEmitter {
           return this.compareValues(expected, emitted, condition.matchOperator);
         });
       }
+    } else if (Array.isArray(emittedValue) && emittedValue.length === 1) {
+      const emitted = emittedValue[0];
+      match = this.compareValues(
+        condition.expectedValue,
+        emitted,
+        condition.matchOperator,
+      );
     } else if (
       typeof condition.expectedValue === 'object' &&
       typeof emittedValue === 'object'
@@ -165,24 +164,51 @@ export abstract class ConditionMonitorBase extends EventEmitter {
         default:
           return false;
       }
-    } else if (typeof emittedValue === 'bigint') {
+    } else if (
+      typeof emittedValue === 'bigint' ||
+      typeof expectedValue === 'bigint'
+    ) {
       switch (operator) {
         case '<':
-          return emittedValue < BigInt(expectedValue);
+          return BigInt(emittedValue) < BigInt(expectedValue);
         case '>':
-          return emittedValue > BigInt(expectedValue);
+          return BigInt(emittedValue) > BigInt(expectedValue);
         case '==':
-          return emittedValue == BigInt(expectedValue);
+          return BigInt(emittedValue) == BigInt(expectedValue);
         case '===':
-          return emittedValue === BigInt(expectedValue);
+          return BigInt(emittedValue) === BigInt(expectedValue);
         case '!==':
-          return emittedValue !== BigInt(expectedValue);
+          return BigInt(emittedValue) !== BigInt(expectedValue);
         case '!=':
-          return emittedValue != BigInt(expectedValue);
+          return BigInt(emittedValue) != BigInt(expectedValue);
         case '>=':
-          return emittedValue >= BigInt(expectedValue);
+          return BigInt(emittedValue) >= BigInt(expectedValue);
         case '<=':
-          return emittedValue <= BigInt(expectedValue);
+          return BigInt(emittedValue) <= BigInt(expectedValue);
+        default:
+          return false;
+      }
+    } else if (
+      typeof emittedValue === 'number' ||
+      typeof expectedValue === 'number'
+    ) {
+      switch (operator) {
+        case '<':
+          return +emittedValue < +expectedValue;
+        case '>':
+          return +emittedValue > +expectedValue;
+        case '==':
+          return +emittedValue == +expectedValue;
+        case '===':
+          return +emittedValue === +expectedValue;
+        case '!==':
+          return +emittedValue !== +expectedValue;
+        case '!=':
+          return +emittedValue != +expectedValue;
+        case '>=':
+          return +emittedValue >= +expectedValue;
+        case '<=':
+          return +emittedValue <= +expectedValue;
         default:
           return false;
       }
@@ -206,43 +232,6 @@ export abstract class ConditionMonitorBase extends EventEmitter {
           return emittedValue <= expectedValue;
         default:
           return false;
-      }
-    }
-  };
-
-  /**
-   * Retry a Promise-based function a specified number of times, handling errors according to the
-   * specified error handling mode. If errorHandlingModeStrict is true, throws an error and exits
-   * the loop upon encountering an error. Otherwise, emits an error message and continues retrying
-   * until the retry limit is reached.
-   *
-   * @param fn - The Promise-based function to retry.
-   * @param retryCount - The number of times to retry the function (default: 3).
-   * @param errorHandlingModeStrict - The error handling mode (default: false).
-   * @returns - Promise resolving when the function has succeeded or the retry limit is reached.
-   */
-  protected retry = async (
-    fn: () => Promise<void>,
-    retryCount: number = 3,
-    errorHandlingModeStrict: boolean,
-    condition: ICondition,
-  ): Promise<void> => {
-    for (let i = 0; i < retryCount; i++) {
-      try {
-        await fn();
-        break;
-      } catch (error) {
-        let message;
-        if (error instanceof Error) message = error.message;
-        else message = String(error);
-        if (errorHandlingModeStrict) {
-          this.emit('conditionError', message, condition);
-          throw new Error(`Error in checking conditions: ${message}`);
-        } else {
-          if (i === retryCount - 1) {
-            this.emit('conditionNotMatched', message);
-          }
-        }
       }
     }
   };

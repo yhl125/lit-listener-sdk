@@ -123,25 +123,13 @@ export abstract class CircuitBase extends EventEmitter {
    * @private
    */
   private continueRun: boolean = true;
-  /**
-   * The EventEmitter instance for handling events.
-   * @private
-   */
-  private emitter = new EventEmitter();
-  /**
-   * Flag indicating whether to strict error throwing is enabled.
-   * @protected
-   */
-  protected errorHandlingModeStrict: boolean = false;
 
   /**
    * Creates an instance of Circuit.
    * @param pkpContractAddress The address of the PKPNFT contract.
-   * @param errorHandlingModeStrict Strict error handling enabled or not.
    */
   constructor(args: {
     monitor: ConditionMonitorBase;
-    errorHandlingModeStrict: boolean;
     litNetwork: LIT_NETWORKS_KEYS;
     pkpPubKey: string;
     conditions: ICondition[];
@@ -158,7 +146,6 @@ export abstract class CircuitBase extends EventEmitter {
       );
     }
     super();
-    this.errorHandlingModeStrict = args.errorHandlingModeStrict;
     args.litNetwork;
     this.litClient = new LitJsSdk.LitNodeClient({
       litNetwork: args.litNetwork,
@@ -182,12 +169,15 @@ export abstract class CircuitBase extends EventEmitter {
     this.startDate = args.options.startDate;
     this.endDate = args.options.endDate;
     this.maxLitActionCompletions = args.options.maxLitActionCompletions;
+    if (args.actions.length === 0) {
+      throw new Error('Must provide at least one action');
+    }
     this.actions = args.actions;
 
     this.monitor = args.monitor;
     this.monitor.on(
       'conditionMatched',
-      (
+      async (
         conditionId: string,
         emittedValue:
           | number
@@ -207,6 +197,7 @@ export abstract class CircuitBase extends EventEmitter {
           JSON.stringify(emittedValue),
           new Date().toISOString(),
         );
+        await this.checkWhenConditionMet();
       },
     );
     this.monitor.on(
@@ -244,8 +235,10 @@ export abstract class CircuitBase extends EventEmitter {
         );
       },
     );
-    this.emitter.on('stop', () => {
+    this.on('stop', () => {
       this.continueRun = false;
+      this.isRunning = false;
+      this.monitor.removeAllListeners();
     });
   }
 
@@ -261,129 +254,32 @@ export abstract class CircuitBase extends EventEmitter {
     if (this.isRunning) {
       throw new Error('Circuit is already running');
     }
-
     this.isRunning = true;
-    try {
-      if (this.actions.length > 0) {
-        // connect lit client
-        await this.connectLit();
 
-        while (this.continueRun) {
-          const monitors: NodeJS.Timeout[] = [];
-          const conditionPromises: Promise<void>[] = [];
-          if (this.conditions.length > 0) {
-            for (const condition of this.conditions) {
-              const conditionPromise = this.monitor.createCondition(
-                condition,
-                this.errorHandlingModeStrict,
-              );
+    // connect lit client
+    await this.connectLit();
 
-              if (this.conditionalLogic.interval) {
-                const timeoutPromise = new Promise<void>((resolve) =>
-                  setTimeout(resolve, this.conditionalLogic.interval),
-                );
-                conditionPromises.push(
-                  Promise.race([conditionPromise, timeoutPromise]).then(() => {
-                    return Promise.resolve();
-                  }),
-                );
-                const monitor = setTimeout(async () => {
-                  await conditionPromise;
-                }, this.conditionalLogic.interval);
-                monitors.push(monitor);
-              } else {
-                conditionPromises.push(conditionPromise);
-              }
-            }
+    if (this.conditions.length > 0) {
+      const conditionPromises: Promise<void>[] = [];
+      for (const condition of this.conditions) {
+        const conditionPromise = this.monitor.createCondition(condition);
 
-            if (!this.continueRun) break;
-
-            await Promise.all(conditionPromises);
-          } else {
-            this.log(
-              LogCategory.CONDITION,
-              'No conditions set, skipping condition checks.',
-              '',
-              new Date().toISOString(),
-            );
-          }
-          const conditionResBefore = this.checkConditionalLogicAndRun();
-          const executionResBefore = this.checkExecutionLimitations();
-
-          this.conditionExecutedCount++;
-          this.log(
-            LogCategory.EXECUTION,
-            'Condition Monitor Count Increased',
-            String(this.conditionExecutedCount),
-            new Date().toISOString(),
-          );
-          if (
-            conditionResBefore === RunStatus.ACTION_RUN &&
-            executionResBefore === RunStatus.ACTION_RUN
-          ) {
-            await this.runActions();
-            const executionResAfter = this.checkExecutionLimitations();
-            if (executionResAfter === RunStatus.EXIT_RUN) {
-              this.log(
-                LogCategory.CONDITION,
-                `Execution Condition Not Met to Continue Circuit.`,
-                `Run Status ${RunStatus.EXIT_RUN}`,
-                new Date().toISOString(),
-              );
-              this.emitter.emit('stop');
-              break;
-            }
-          } else if (
-            conditionResBefore === RunStatus.EXIT_RUN ||
-            executionResBefore === RunStatus.EXIT_RUN
-          ) {
-            this.log(
-              LogCategory.CONDITION,
-              `Execution Condition Not Met to Continue Circuit.`,
-              `Run Status ${RunStatus.EXIT_RUN}`,
-              new Date().toISOString(),
-            );
-            this.emitter.emit('stop');
-            break;
-          }
-
-          if (!this.continueRun) break;
-
-          if (this.conditionalLogic.interval) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, this.conditionalLogic.interval),
-            );
-          }
-
-          monitors.forEach((monitor) => clearTimeout(monitor));
-
-          // check again in case of CONTINUE_RUN status
-          const conditionResEnd = this.checkConditionalLogicAndRun();
-          const executionResEnd = this.checkExecutionLimitations();
-          if (
-            conditionResEnd === RunStatus.EXIT_RUN ||
-            executionResEnd === RunStatus.EXIT_RUN
-          ) {
-            this.log(
-              LogCategory.CONDITION,
-              `Execution Condition Not Met to Continue Circuit.`,
-              `Run Status ${RunStatus.EXIT_RUN}`,
-              new Date().toISOString(),
-            );
-            this.emitter.emit('stop');
-            break;
-          }
-        }
-      } else if (this.actions.length < 1) {
-        throw new Error(`Actions have not been set. Run setActions() first.`);
+        conditionPromises.push(conditionPromise);
       }
-    } catch (error) {
-      let message;
-      if (error instanceof Error) message = error.message;
-      else message = String(error);
-      throw new Error(`Error running circuit: ${message}`);
-    } finally {
-      this.isRunning = false;
+      await Promise.all(conditionPromises);
+      this.log(
+        LogCategory.CONDITION,
+        'Set conditions successfully.',
+        '',
+        new Date().toISOString(),
+      );
+    } else {
+      this.log(
+        LogCategory.CONDITION,
+        'No conditions set, skipping condition checks.',
+        '',
+        new Date().toISOString(),
+      );
     }
   };
 
@@ -411,13 +307,72 @@ export abstract class CircuitBase extends EventEmitter {
    * Forcefully interrupts the circuit.
    */
   interrupt = () => {
-    this.emitter.emit('stop');
+    this.emit('stop');
     this.log(
       LogCategory.ERROR,
       'Circuit forcefully interrupted at ',
       `${Date.now()}`,
       new Date().toISOString(),
     );
+  };
+
+  private checkWhenConditionMet = async (): Promise<void> => {
+    const conditionResBefore = this.checkConditionalLogicAndRun();
+    const executionResBefore = this.checkExecutionLimitations();
+
+    this.conditionExecutedCount++;
+    this.log(
+      LogCategory.EXECUTION,
+      'Condition Monitor Count Increased',
+      String(this.conditionExecutedCount),
+      new Date().toISOString(),
+    );
+    if (
+      conditionResBefore === RunStatus.ACTION_RUN &&
+      executionResBefore === RunStatus.ACTION_RUN
+    ) {
+      await this.runActions();
+      const executionResAfter = this.checkExecutionLimitations();
+      if (executionResAfter === RunStatus.EXIT_RUN) {
+        this.log(
+          LogCategory.CONDITION,
+          `Execution Condition Not Met to Continue Circuit.`,
+          `Run Status ${RunStatus.EXIT_RUN}`,
+          new Date().toISOString(),
+        );
+        this.emit('stop');
+        return;
+      }
+    } else if (
+      conditionResBefore === RunStatus.EXIT_RUN ||
+      executionResBefore === RunStatus.EXIT_RUN
+    ) {
+      this.log(
+        LogCategory.CONDITION,
+        `Execution Condition Not Met to Continue Circuit.`,
+        `Run Status ${RunStatus.EXIT_RUN}`,
+        new Date().toISOString(),
+      );
+      this.emit('stop');
+      return;
+    }
+
+    // check again in case of CONTINUE_RUN status
+    const conditionResEnd = this.checkConditionalLogicAndRun();
+    const executionResEnd = this.checkExecutionLimitations();
+    if (
+      conditionResEnd === RunStatus.EXIT_RUN ||
+      executionResEnd === RunStatus.EXIT_RUN
+    ) {
+      this.log(
+        LogCategory.CONDITION,
+        `Execution Condition Not Met to Continue Circuit.`,
+        `Run Status ${RunStatus.EXIT_RUN}`,
+        new Date().toISOString(),
+      );
+      this.emit('stop');
+      return;
+    }
   };
 
   /**

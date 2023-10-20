@@ -10,18 +10,13 @@ export class ConditionMonitorViem extends ConditionMonitorBase {
   protected unwatchContract: (() => void) | undefined;
   constructor() {
     super();
+    this.on('stop', () => {
+      if (this.unwatchContract) this.unwatchContract();
+    });
   }
-  override createCondition = async (
-    condition: ICondition,
-    errorHandlingModeStrict: boolean,
-  ) => {
+  override createCondition = async (condition: ICondition) => {
     if (condition instanceof WebhookCondition) {
-      await this.retry(
-        () => this.startMonitoringWebHook(condition),
-        3,
-        errorHandlingModeStrict,
-        condition,
-      );
+      await this.startMonitoringWebHook(condition);
     } else if (condition instanceof ViemContractCondition) {
       this.unwatchContract = await this.startMonitoringViemContract(condition);
     }
