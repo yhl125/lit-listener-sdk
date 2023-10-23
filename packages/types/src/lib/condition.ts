@@ -1,4 +1,5 @@
-import { Abi, Transport } from 'viem';
+import { Abi, Address, Transport } from 'viem';
+import { AbiEvent } from 'abitype';
 
 export interface ICondition {
   id: string;
@@ -68,16 +69,11 @@ export class WebhookCondition implements IWebhookCondition {
 export interface IViemContractCondition extends ICondition {
   abi: Abi;
   transport: Transport;
-  expectedValue:
-    | number
-    | string
-    | bigint
-    | object
-    | (string | number | bigint | object)[];
-  matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-  contractAddress?: `0x${string}`;
+  contractAddress?: Address;
   eventName?: string;
   eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+  batch: boolean;
+  pollingInterval?: number;
 }
 
 export class ViemContractCondition implements IViemContractCondition {
@@ -91,9 +87,11 @@ export class ViemContractCondition implements IViemContractCondition {
     | object
     | (string | number | bigint | object)[];
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-  contractAddress?: `0x${string}`;
+  contractAddress?: Address;
   eventName?: string;
   eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+  batch: boolean;
+  pollingInterval?: number;
 
   constructor(args: {
     abi: Abi;
@@ -108,9 +106,11 @@ export class ViemContractCondition implements IViemContractCondition {
      * emittedValue matchOperator expectedValue
      */
     matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    contractAddress?: `0x${string}`;
+    contractAddress?: Address;
     eventName?: string;
     eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+    batch?: boolean;
+    pollingInterval?: number;
   }) {
     this.id = crypto.randomUUID();
     this.abi = args.abi;
@@ -120,5 +120,62 @@ export class ViemContractCondition implements IViemContractCondition {
     this.contractAddress = args.contractAddress;
     this.eventName = args.eventName;
     this.eventArgs = args.eventArgs;
+    this.batch = args.batch ?? true;
+    this.pollingInterval = args.pollingInterval;
+  }
+}
+
+export interface IViemEventCondition extends ICondition {
+  transport: Transport;
+  address?: Address | Address[];
+  event?: AbiEvent;
+  eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+  batch: boolean;
+  pollingInterval?: number;
+}
+
+export class ViemEventCondition implements IViemEventCondition {
+  readonly id: string;
+  expectedValue:
+    | number
+    | string
+    | bigint
+    | object
+    | (string | number | bigint | object)[];
+  matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+  transport: Transport;
+  address?: Address | Address[];
+  event?: AbiEvent;
+  eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+  batch: boolean;
+  pollingInterval?: number;
+
+  constructor(args: {
+    expectedValue:
+      | number
+      | string
+      | bigint
+      | object
+      | (string | number | bigint | object)[];
+    /**
+     * emittedValue matchOperator expectedValue
+     */
+    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
+    transport: Transport;
+    address?: Address | Address[];
+    event?: AbiEvent;
+    eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
+    batch?: boolean;
+    pollingInterval?: number;
+  }) {
+    this.id = crypto.randomUUID();
+    this.expectedValue = args.expectedValue;
+    this.matchOperator = args.matchOperator;
+    this.transport = args.transport;
+    this.address = args.address;
+    this.event = args.event;
+    this.eventArgs = args.eventArgs;
+    this.batch = args.batch ?? true;
+    this.pollingInterval = args.pollingInterval;
   }
 }
