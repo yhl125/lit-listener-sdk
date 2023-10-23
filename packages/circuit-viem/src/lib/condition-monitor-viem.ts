@@ -16,7 +16,7 @@ export class ConditionMonitorViem extends ConditionMonitorBase {
   }
   override createCondition = async (condition: ICondition) => {
     if (condition instanceof WebhookCondition) {
-      await this.startMonitoringWebHook(condition);
+      this.webhookInterval = await this.startMonitoringWebhook(condition);
     } else if (condition instanceof ViemContractCondition) {
       this.unwatchContract = await this.startMonitoringViemContract(condition);
     }

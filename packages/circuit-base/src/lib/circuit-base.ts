@@ -445,16 +445,6 @@ export abstract class CircuitBase extends EventEmitter {
             return RunStatus.CONTINUE_RUN;
           }
 
-        case 'TARGET':
-          if (
-            this.conditionalLogic.targetCondition &&
-            this.satisfiedConditions.has(this.conditionalLogic.targetCondition)
-          ) {
-            return RunStatus.ACTION_RUN;
-          } else {
-            return RunStatus.CONTINUE_RUN;
-          }
-
         case 'EVERY':
           if (this.satisfiedConditions.size === this.conditions.length) {
             return RunStatus.ACTION_RUN;

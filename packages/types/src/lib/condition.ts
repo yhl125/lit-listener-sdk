@@ -8,20 +8,24 @@ export interface ICondition {
     | bigint
     | object
     | (string | number | bigint | object)[];
+  /**
+   * emittedValue matchOperator expectedValue
+   */
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
 }
 
 export interface IWebhookCondition extends ICondition {
-  baseUrl: string;
-  endpoint: string;
+  url: string;
+  init?: RequestInit;
   responsePath: string;
-  apiKey?: string;
+  // in milliseconds
+  interval: number;
 }
 
 export class WebhookCondition implements IWebhookCondition {
   readonly id: string;
-  baseUrl: string;
-  endpoint: string;
+  url: string;
+  init?: RequestInit;
   responsePath: string;
   expectedValue:
     | number
@@ -30,11 +34,11 @@ export class WebhookCondition implements IWebhookCondition {
     | object
     | (string | number | bigint | object)[];
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-  apiKey?: string;
+  interval: number;
 
   constructor(args: {
-    baseUrl: string;
-    endpoint: string;
+    url: string;
+    init?: RequestInit;
     responsePath: string;
     expectedValue:
       | number
@@ -42,16 +46,22 @@ export class WebhookCondition implements IWebhookCondition {
       | bigint
       | object
       | (string | number | bigint | object)[];
+    /**
+     * emittedValue matchOperator expectedValue
+     */
     matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    apiKey?: string;
+    /**
+     * milliseconds
+     */
+    interval: number;
   }) {
     this.id = crypto.randomUUID();
-    this.baseUrl = args.baseUrl;
-    this.endpoint = args.endpoint;
+    this.url = args.url;
+    this.init = args.init;
     this.responsePath = args.responsePath;
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
-    this.apiKey = args.apiKey;
+    this.interval = args.interval;
   }
 }
 
@@ -94,6 +104,9 @@ export class ViemContractCondition implements IViemContractCondition {
       | bigint
       | object
       | (string | number | bigint | object)[];
+    /**
+     * emittedValue matchOperator expectedValue
+     */
     matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
     contractAddress?: `0x${string}`;
     eventName?: string;

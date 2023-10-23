@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { EventEmitter } from 'events';
 import { ICondition, WebhookCondition } from '@lit-listener-sdk/types';
 import * as _ from 'lodash';
@@ -7,8 +6,12 @@ import * as _ from 'lodash';
  * @description Class that monitors and handles conditions.
  */
 export abstract class ConditionMonitorBase extends EventEmitter {
+  protected webhookInterval: NodeJS.Timeout | undefined;
   constructor() {
     super();
+    this.on('stop', () => {
+      if (this.webhookInterval) clearInterval(this.webhookInterval);
+    });
   }
 
   /**
@@ -18,45 +21,26 @@ export abstract class ConditionMonitorBase extends EventEmitter {
    */
   createCondition = async (condition: ICondition) => {
     if (condition instanceof WebhookCondition) {
-      await this.startMonitoringWebHook(condition);
+      this.webhookInterval = await this.startMonitoringWebhook(condition);
     }
   };
 
   /**
-   * @method startMonitoringWebHook
+   * @method startMonitoringWebhook
    * @description Starts monitoring a webhook condition.
    * @protected
    * @param condition - The webhook condition to monitor.
    * @throws {Error} If an error occurs while retrieving webhook information.
    */
-  protected startMonitoringWebHook = async (condition: WebhookCondition) => {
+  protected startMonitoringWebhook = async (condition: WebhookCondition) => {
     // Monitor function, encapsulates the logic of querying the webhook and checking the response against the expected value.
     const webhookListener = async () => {
       try {
-        const headers = condition.apiKey
-          ? { Authorization: `Bearer ${condition.apiKey}` }
-          : undefined;
-        const response = await axios.get(
-          `${condition.baseUrl}${condition.endpoint}`,
-          { headers },
-        );
-        let value = response.data;
-        let pathParts = condition.responsePath.split('.');
-        pathParts = pathParts.flatMap((part) =>
-          part.split(/\[(.*?)\]/).filter(Boolean),
-        );
+        const response = await fetch(condition.url, condition.init);
+        const json = await response.json();
+        const emittedValue = _.get(json, condition.responsePath);
 
-        for (const part of pathParts) {
-          if (!isNaN(parseInt(part))) {
-            value = value[parseInt(part)];
-          } else {
-            value = value[part];
-          }
-          if (value === undefined) {
-            throw new Error(`Invalid response path: ${condition.responsePath}`);
-          }
-        }
-        await this.checkAgainstExpected(condition, value);
+        await this.checkAgainstExpected(condition, emittedValue);
       } catch (error) {
         let message;
         if (error instanceof Error) message = error.message;
@@ -66,7 +50,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       }
     };
 
-    return webhookListener();
+    return setInterval(async () => {
+      await webhookListener();
+    }, condition.interval);
   };
 
   /**
@@ -153,6 +139,11 @@ export abstract class ConditionMonitorBase extends EventEmitter {
     emittedValue: number | string | bigint | object,
     operator: string,
   ): boolean => {
+    this.emit(
+      'conditionNotMatched',
+      '',
+      `emittedValue: ${emittedValue}, expectedValue: ${expectedValue}, operator: ${operator}`,
+    );
     if (typeof emittedValue === 'object' || typeof expectedValue === 'object') {
       switch (operator) {
         case '==':
