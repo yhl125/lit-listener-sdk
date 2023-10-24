@@ -280,6 +280,7 @@ export abstract class CircuitBase extends EventEmitter {
         '',
         new Date().toISOString(),
       );
+      await this.checkWhenConditionMet();
     }
   };
 

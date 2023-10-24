@@ -24,23 +24,25 @@ export interface ViemTransaction {
   accessList?: AccessList;
   chain?: Chain;
   data?: Hex;
-  gasPrice?: bigint;
-  maxFeePerGas?: bigint;
-  maxPriorityFeePerGas?: bigint;
+  gasPrice?: bigint | number | string;
+  maxFeePerGas?: bigint | number | string;
+  maxPriorityFeePerGas?: bigint | number | string;
   nonce?: number;
-  value?: bigint;
+  value?: bigint | number | string;
 }
 
 export interface FetchActionViemTransaction extends FetchActionBase {
   type: 'fetch-viem';
   chain: Chain;
   transport: Transport;
+  ignoreGas?: boolean;
 }
 
 export interface ViemTransactionAction extends IAction, ViemTransaction {
   type: 'viem';
   chain: Chain;
   transport: Transport;
+  ignoreGas?: boolean;
 }
 
 export function isFetchActionViemTransaction(

@@ -1,12 +1,13 @@
 import {
+  FetchActionViemTransaction,
   ViemContractCondition,
   ViemTransactionAction,
   WebhookCondition,
 } from '@lit-listener-sdk//types';
 import { CircuitViem } from './circuit-viem';
 import { CONTROLLER_AUTHSIG, PKP_PUBKEY } from 'lit.config.json';
-import { defineChain, parseAbi } from 'viem';
-import { http } from 'viem';
+import { defineChain, parseAbi, http } from 'viem';
+import { goerli } from 'viem/chains';
 
 jest.setTimeout(40000);
 
@@ -196,6 +197,49 @@ describe('CircuitViem', () => {
 
     // 25 seconds
     await new Promise((r) => setTimeout(r, 20000));
+
+    //Did callback get called?
+    expect(callback).toBeCalled();
+    // transactionHash should be in the log message
+    // eg {\"message\":\"transactionHash\",\"response\":\"0xbf937a25378614de52d2ead9fbf500f54babcf8911718d03f3a1cc18f719ca15\",\"isoDate\":\"2023-10-18T05:50:19.837Z\"}
+    expect(
+      callback.mock.calls.map((calls) => {
+        return calls[0].includes('transactionHash');
+      }),
+    ).toContain(true);
+  });
+
+  it('fetch action', async () => {
+    // Mock the event callback to see that:
+    const callback = jest.fn();
+
+    const fetchAction: FetchActionViemTransaction = {
+      type: 'fetch-viem',
+      chain: goerli,
+      transport: http('https://ethereum-goerli.publicnode.com'),
+      url: 'https://goerli.api.0x.org/swap/v1/quote?buyToken=WETH&sellToken=ETH&buyAmount=100',
+      init: {
+        headers: { '0x-api-key': '' },
+      },
+      responsePath: '',
+      ignoreGas: true,
+    };
+
+    // This is a factory function
+    const circuit = new CircuitViem({
+      litNetwork: 'serrano',
+      pkpPubKey: PKP_PUBKEY,
+      conditions: [],
+      conditionalLogic: { type: 'EVERY' },
+      options: { maxLitActionCompletions: 1 },
+      actions: [fetchAction],
+      authSig: CONTROLLER_AUTHSIG,
+    });
+    circuit.start();
+    circuit.on('log', (log) => {
+      callback(log);
+    });
+    await new Promise((r) => setTimeout(r, 10000));
 
     //Did callback get called?
     expect(callback).toBeCalled();

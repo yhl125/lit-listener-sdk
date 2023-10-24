@@ -38,7 +38,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       try {
         const response = await fetch(condition.url, condition.init);
         const json = await response.json();
-        const emittedValue = _.get(json, condition.responsePath);
+        let emittedValue;
+        if (condition.responsePath === '') emittedValue = json;
+        else emittedValue = _.get(json, condition.responsePath);
 
         await this.checkAgainstExpected(condition, emittedValue);
       } catch (error) {

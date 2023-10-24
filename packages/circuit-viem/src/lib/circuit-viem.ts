@@ -14,6 +14,7 @@ import {
 } from '@lit-listener-sdk//types';
 import { PKPViemAccount } from '@altpd13/pkp-viem';
 import { createWalletClient } from 'viem';
+import * as _ from 'lodash';
 
 export class CircuitViem extends CircuitBase {
   constructor(args: {
@@ -55,6 +56,11 @@ export class CircuitViem extends CircuitBase {
             transport: action.transport,
             chain: action.chain,
           });
+          if (action.ignoreGas) {
+            action.gasPrice = undefined;
+            action.maxFeePerGas = undefined;
+            action.maxPriorityFeePerGas = undefined;
+          }
           const hash = action.gasPrice
             ? await walletClient.sendTransaction({
                 account,
@@ -62,9 +68,9 @@ export class CircuitViem extends CircuitBase {
                 accessList: action.accessList,
                 chain: action.chain,
                 data: action.data,
-                gasPrice: action.gasPrice,
+                gasPrice: action.gasPrice ? BigInt(action.gasPrice) : undefined,
                 nonce: action.nonce,
-                value: action.value,
+                value: action.value ? BigInt(action.value) : undefined,
               })
             : await walletClient.sendTransaction({
                 account,
@@ -72,10 +78,14 @@ export class CircuitViem extends CircuitBase {
                 accessList: action.accessList,
                 chain: action.chain,
                 data: action.data,
-                maxFeePerGas: action.maxFeePerGas,
-                maxPriorityFeePerGas: action.maxPriorityFeePerGas,
+                maxFeePerGas: action.maxFeePerGas
+                  ? BigInt(action.maxFeePerGas)
+                  : undefined,
+                maxPriorityFeePerGas: action.maxPriorityFeePerGas
+                  ? BigInt(action.maxPriorityFeePerGas)
+                  : undefined,
                 nonce: action.nonce,
-                value: action.value,
+                value: action.value ? BigInt(action.value) : undefined,
               });
           this.log(
             LogCategory.RESPONSE,
@@ -91,10 +101,17 @@ export class CircuitViem extends CircuitBase {
             transport: action.transport,
             chain: action.chain,
           });
-          const transactions: ViemTransaction | ViemTransaction[] =
-            json[action.responsePath];
+          let transactions: ViemTransaction | ViemTransaction[];
+          if (action.responsePath === '') transactions = json;
+          else transactions = _.get(json, action.responsePath);
+
           if (Array.isArray(transactions)) {
             for (const tx of transactions) {
+              if (action.ignoreGas) {
+                tx.gasPrice = undefined;
+                tx.maxFeePerGas = undefined;
+                tx.maxPriorityFeePerGas = undefined;
+              }
               const hash = tx.gasPrice
                 ? await walletClient.sendTransaction({
                     account,
@@ -102,9 +119,9 @@ export class CircuitViem extends CircuitBase {
                     accessList: tx.accessList,
                     chain: tx.chain,
                     data: tx.data,
-                    gasPrice: tx.gasPrice,
+                    gasPrice: tx.gasPrice ? BigInt(tx.gasPrice) : undefined,
                     nonce: tx.nonce,
-                    value: tx.value,
+                    value: tx.value ? BigInt(tx.value) : undefined,
                   })
                 : await walletClient.sendTransaction({
                     account,
@@ -112,10 +129,14 @@ export class CircuitViem extends CircuitBase {
                     accessList: tx.accessList,
                     chain: tx.chain,
                     data: tx.data,
-                    maxFeePerGas: tx.maxFeePerGas,
-                    maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+                    maxFeePerGas: tx.maxFeePerGas
+                      ? BigInt(tx.maxFeePerGas)
+                      : undefined,
+                    maxPriorityFeePerGas: tx.maxPriorityFeePerGas
+                      ? BigInt(tx.maxPriorityFeePerGas)
+                      : undefined,
                     nonce: tx.nonce,
-                    value: tx.value,
+                    value: tx.value ? BigInt(tx.value) : undefined,
                   });
               this.log(
                 LogCategory.RESPONSE,
@@ -125,6 +146,11 @@ export class CircuitViem extends CircuitBase {
               );
             }
           } else {
+            if (action.ignoreGas) {
+              transactions.gasPrice = undefined;
+              transactions.maxFeePerGas = undefined;
+              transactions.maxPriorityFeePerGas = undefined;
+            }
             const hash = transactions.gasPrice
               ? await walletClient.sendTransaction({
                   account,
@@ -132,9 +158,13 @@ export class CircuitViem extends CircuitBase {
                   accessList: transactions.accessList,
                   chain: transactions.chain,
                   data: transactions.data,
-                  gasPrice: transactions.gasPrice,
+                  gasPrice: transactions.gasPrice
+                    ? BigInt(transactions.gasPrice)
+                    : undefined,
                   nonce: transactions.nonce,
-                  value: transactions.value,
+                  value: transactions.value
+                    ? BigInt(transactions.value)
+                    : undefined,
                 })
               : await walletClient.sendTransaction({
                   account,
@@ -142,10 +172,16 @@ export class CircuitViem extends CircuitBase {
                   accessList: transactions.accessList,
                   chain: transactions.chain,
                   data: transactions.data,
-                  maxFeePerGas: transactions.maxFeePerGas,
-                  maxPriorityFeePerGas: transactions.maxPriorityFeePerGas,
+                  maxFeePerGas: transactions.maxFeePerGas
+                    ? BigInt(transactions.maxFeePerGas)
+                    : undefined,
+                  maxPriorityFeePerGas: transactions.maxPriorityFeePerGas
+                    ? BigInt(transactions.maxPriorityFeePerGas)
+                    : undefined,
                   nonce: transactions.nonce,
-                  value: transactions.value,
+                  value: transactions.value
+                    ? BigInt(transactions.value)
+                    : undefined,
                 });
             this.log(
               LogCategory.RESPONSE,
