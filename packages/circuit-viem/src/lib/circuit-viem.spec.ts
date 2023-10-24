@@ -3,7 +3,7 @@ import {
   ViemContractCondition,
   ViemTransactionAction,
   WebhookCondition,
-} from '@lit-listener-sdk//types';
+} from '@lit-listener-sdk/types';
 import { CircuitViem } from './circuit-viem';
 import { CONTROLLER_AUTHSIG, PKP_PUBKEY } from 'lit.config.json';
 import { defineChain, parseAbi, http } from 'viem';

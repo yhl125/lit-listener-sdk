@@ -1,4 +1,4 @@
-import { CircuitBase } from '@lit-listener-sdk//circuit-base';
+import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
 import { ConditionMonitorViem } from './condition-monitor-viem';
 import {
@@ -11,7 +11,7 @@ import {
   isViemTransactionAction,
   isFetchActionViemTransaction,
   ViemTransaction,
-} from '@lit-listener-sdk//types';
+} from '@lit-listener-sdk/types';
 import { PKPViemAccount } from '@altpd13/pkp-viem';
 import { createWalletClient } from 'viem';
 import * as _ from 'lodash';

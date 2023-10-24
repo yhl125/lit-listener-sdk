@@ -1,10 +1,10 @@
-import { ConditionMonitorBase } from '@lit-listener-sdk//circuit-base';
+import { ConditionMonitorBase } from '@lit-listener-sdk/circuit-base';
 import {
   ICondition,
   ViemContractCondition,
   ViemEventCondition,
   WebhookCondition,
-} from '@lit-listener-sdk//types';
+} from '@lit-listener-sdk/types';
 import { createPublicClient } from 'viem';
 
 export class ConditionMonitorViem extends ConditionMonitorBase {

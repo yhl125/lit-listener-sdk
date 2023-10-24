@@ -16,9 +16,12 @@
     "baseUrl": ".",
     "resolveJsonModule": true,
     "paths": {
-      "@lit-listener-sdk//circuit-base": ["packages/circuit-base/src/index.ts"],
-      "@lit-listener-sdk//types": ["packages/types/src/index.ts"],
-      "@lit-listener-sdk/circuit-viem": ["packages/circuit-viem/src/index.ts"]
+      "@lit-listener-sdk/circuit-base": ["packages/circuit-base/src/index.ts"],
+      "@lit-listener-sdk/types": ["packages/types/src/index.ts"],
+      "@lit-listener-sdk/circuit-viem": ["packages/circuit-viem/src/index.ts"],
+      "@lit-listener-sdk/circuit-zerodev": [
+        "packages/circuit-zerodev/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

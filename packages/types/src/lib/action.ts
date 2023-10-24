@@ -1,3 +1,5 @@
+import { ValidatorProviderParamsOpts } from '@zerodev/sdk';
+import { ECDSAValidatorParams } from '@zerodev/sdk/dist/types/kernel-zerodev/validator/ecdsa-validator';
 import { AccessList, Address, Chain, Hex, Transport } from 'viem';
 
 export interface IAction {
@@ -31,6 +33,15 @@ export interface ViemTransaction {
   value?: bigint | number | string;
 }
 
+export interface UserOperationCallData {
+  /* the target of the call */
+  target: Address;
+  /* the data passed to the target */
+  data: Hex;
+  /* the amount of native token to send to the target (default: 0) */
+  value?: bigint;
+}
+
 export interface FetchActionViemTransaction extends FetchActionBase {
   type: 'fetch-viem';
   chain: Chain;
@@ -45,6 +56,19 @@ export interface ViemTransactionAction extends IAction, ViemTransaction {
   ignoreGas?: boolean;
 }
 
+export interface FetchActionZeroDevUserOperation extends FetchActionBase {
+  type: 'fetch-zerodev';
+  projectId: string;
+  opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
+}
+
+export interface ZeroDevUserOperationAction extends IAction {
+  type: 'zerodev';
+  projectId: string;
+  opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
+  userOp: UserOperationCallData | UserOperationCallData[];
+}
+
 export function isFetchActionViemTransaction(
   action: IAction,
 ): action is FetchActionViemTransaction {
@@ -55,4 +79,16 @@ export function isViemTransactionAction(
   action: IAction,
 ): action is ViemTransactionAction {
   return action.type === 'viem';
+}
+
+export function isFetchActionZeroDevUserOperation(
+  action: IAction,
+): action is FetchActionZeroDevUserOperation {
+  return action.type === 'fetch-zerodev';
+}
+
+export function isZeroDevUserOperationAction(
+  action: IAction,
+): action is ZeroDevUserOperationAction {
+  return action.type === 'zerodev';
 }
