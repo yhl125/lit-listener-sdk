@@ -93,7 +93,7 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       if (condition.expectedValue.length !== emittedValue.length) {
         match = false;
       } else {
-        match = condition.expectedValue.every((expected, index) => {
+        match = condition.expectedValue.every((expected: string | number | bigint | object, index: number) => {
           const emitted = emittedValue[index];
           return this.compareValues(expected, emitted, condition.matchOperator);
         });
