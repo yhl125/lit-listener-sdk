@@ -1,6 +1,7 @@
 import * as LitJsSdk from '@lit-protocol/lit-node-client';
-import { EventEmitter } from 'events';
+import { EventEmitter2 } from 'eventemitter2';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
+
 import {
   IAction,
   ICondition,
@@ -12,17 +13,12 @@ import {
 } from '@lit-listener-sdk/types';
 import { ConditionMonitorBase } from './condition-monitor-base';
 
-export abstract class CircuitBase extends EventEmitter {
+export abstract class CircuitBase extends EventEmitter2 {
   /**
    * Boolean for locking start into one concurrent run.
    * @private
    */
   private isRunning: boolean = false;
-  /**
-   * Boolean for setting a secure key for the Lit Action.
-   * @private
-   */
-  private useSecureKey: boolean = false;
   /**
    * The array of conditions.
    * @private
@@ -94,11 +90,6 @@ export abstract class CircuitBase extends EventEmitter {
    */
   private litClient: LitJsSdk.LitNodeClient;
   /**
-   * The secure key inputted by the developer.
-   * @private
-   */
-  private secureKey?: string;
-  /**
    * The public key of the PKP.
    * @protected
    */
@@ -113,16 +104,6 @@ export abstract class CircuitBase extends EventEmitter {
    * @protected
    */
   protected sessionSigs?: SessionSigs;
-  /**
-   * Flag indicating if the action helper function has been set.
-   * @private
-   */
-  private hasSetActionHelperFunction = false;
-  /**
-   * Flag indicating whether to continue running the circuit.
-   * @private
-   */
-  private continueRun: boolean = true;
 
   /**
    * Creates an instance of Circuit.
@@ -138,7 +119,6 @@ export abstract class CircuitBase extends EventEmitter {
     actions: IAction[];
     authSig?: AuthSig;
     sessionSigs?: SessionSigs;
-    secureKey?: string;
   }) {
     if (!args.authSig && !args.sessionSigs) {
       throw new Error(
@@ -157,10 +137,6 @@ export abstract class CircuitBase extends EventEmitter {
     }
     if (args.sessionSigs) {
       this.sessionSigs = args.sessionSigs;
-    }
-    if (args.secureKey) {
-      this.secureKey = args.secureKey;
-      this.useSecureKey = true;
     }
 
     this.conditions = args.conditions;
@@ -229,14 +205,13 @@ export abstract class CircuitBase extends EventEmitter {
       (error: string, condition: ICondition) => {
         this.log(
           LogCategory.ERROR,
-          `Error in condition monitoring with condition ${condition.id}`,
+          `Error in condition monitoring with condition ${condition}`,
           error,
           new Date().toISOString(),
         );
       },
     );
     this.on('stop', () => {
-      this.continueRun = false;
       this.isRunning = false;
       this.monitor.removeAllListeners();
     });

@@ -9,6 +9,7 @@
     "@lit-protocol/lit-node-client": "^2.2.61",
     "@lit-protocol/types": "^2.2.61",
     "@zerodev/sdk": "^4.0.30",
+    "eventemitter2": "^6.4.9",
     "lodash": "^4.17.21",
     "tslib": "^2.6.2",
     "viem": "^1.16.4"

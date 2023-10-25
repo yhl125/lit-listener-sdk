@@ -2,7 +2,6 @@ import { Abi, Address, Transport } from 'viem';
 import { AbiEvent } from 'abitype';
 
 export interface ICondition {
-  id: string;
   expectedValue:
     | number
     | string
@@ -24,7 +23,6 @@ export interface IWebhookCondition extends ICondition {
 }
 
 export class WebhookCondition implements IWebhookCondition {
-  readonly id: string;
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -56,7 +54,6 @@ export class WebhookCondition implements IWebhookCondition {
      */
     interval: number;
   }) {
-    this.id = crypto.randomUUID();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -77,7 +74,6 @@ export interface IViemContractCondition extends ICondition {
 }
 
 export class ViemContractCondition implements IViemContractCondition {
-  readonly id: string;
   abi: Abi;
   transport: Transport;
   expectedValue:
@@ -112,7 +108,6 @@ export class ViemContractCondition implements IViemContractCondition {
     batch?: boolean;
     pollingInterval?: number;
   }) {
-    this.id = crypto.randomUUID();
     this.abi = args.abi;
     this.transport = args.transport;
     this.expectedValue = args.expectedValue;
@@ -135,7 +130,6 @@ export interface IViemEventCondition extends ICondition {
 }
 
 export class ViemEventCondition implements IViemEventCondition {
-  readonly id: string;
   expectedValue:
     | number
     | string
@@ -168,7 +162,6 @@ export class ViemEventCondition implements IViemEventCondition {
     batch?: boolean;
     pollingInterval?: number;
   }) {
-    this.id = crypto.randomUUID();
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
     this.transport = args.transport;

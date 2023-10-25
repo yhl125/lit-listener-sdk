@@ -1,5 +1,13 @@
-import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
+import {
+  PKPViemAccount,
+  convertAccountToSmartAccountSigner,
+} from '@altpd13/pkp-viem';
+import * as _ from 'lodash';
+import { ECDSAProvider } from '@zerodev/sdk';
+import { Hash } from 'viem';
+
+import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { ConditionMonitorViem } from '@lit-listener-sdk/circuit-viem';
 import {
   ICondition,
@@ -13,13 +21,6 @@ import {
   ZeroDevUserOperationAction,
   UserOperationCallData,
 } from '@lit-listener-sdk/types';
-import {
-  PKPViemAccount,
-  convertAccountToSmartAccountSigner,
-} from '@altpd13/pkp-viem';
-import * as _ from 'lodash';
-import { ECDSAProvider } from '@zerodev/sdk';
-import { Hash } from 'viem';
 
 export class CircuitZeroDev extends CircuitBase {
   constructor(args: {
@@ -31,7 +32,6 @@ export class CircuitZeroDev extends CircuitBase {
     actions: (FetchActionZeroDevUserOperation | ZeroDevUserOperationAction)[];
     authSig?: AuthSig;
     sessionSigs?: SessionSigs;
-    secureKey?: string;
   }) {
     super({
       monitor: new ConditionMonitorViem(),
@@ -43,7 +43,6 @@ export class CircuitZeroDev extends CircuitBase {
       actions: args.actions,
       authSig: args.authSig,
       sessionSigs: args.sessionSigs,
-      secureKey: args.secureKey,
     });
   }
 

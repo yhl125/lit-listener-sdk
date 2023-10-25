@@ -1,11 +1,13 @@
-import { EventEmitter } from 'events';
-import { ICondition, WebhookCondition } from '@lit-listener-sdk/types';
+import { EventEmitter2 } from 'eventemitter2';
 import * as _ from 'lodash';
+
+import { ICondition, WebhookCondition } from '@lit-listener-sdk/types';
+
 /**
  * @class ConditionMonitor
  * @description Class that monitors and handles conditions.
  */
-export abstract class ConditionMonitorBase extends EventEmitter {
+export abstract class ConditionMonitorBase extends EventEmitter2 {
   protected webhookInterval: NodeJS.Timeout | undefined;
   constructor() {
     super();
@@ -93,10 +95,16 @@ export abstract class ConditionMonitorBase extends EventEmitter {
       if (condition.expectedValue.length !== emittedValue.length) {
         match = false;
       } else {
-        match = condition.expectedValue.every((expected: string | number | bigint | object, index: number) => {
-          const emitted = emittedValue[index];
-          return this.compareValues(expected, emitted, condition.matchOperator);
-        });
+        match = condition.expectedValue.every(
+          (expected: string | number | bigint | object, index: number) => {
+            const emitted = emittedValue[index];
+            return this.compareValues(
+              expected,
+              emitted,
+              condition.matchOperator,
+            );
+          },
+        );
       }
     } else if (Array.isArray(emittedValue) && emittedValue.length === 1) {
       const emitted = emittedValue[0];
@@ -114,9 +122,9 @@ export abstract class ConditionMonitorBase extends EventEmitter {
 
     try {
       if (match) {
-        this.emit('conditionMatched', condition.id, emittedValue);
+        this.emit('conditionMatched', condition, emittedValue);
       } else {
-        this.emit('conditionNotMatched', condition.id, emittedValue);
+        this.emit('conditionNotMatched', condition, emittedValue);
       }
     } catch (error) {
       let message;

@@ -1,6 +1,9 @@
-import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
-import { ConditionMonitorViem } from './condition-monitor-viem';
+import { PKPViemAccount } from '@altpd13/pkp-viem';
+import { createWalletClient } from 'viem';
+import * as _ from 'lodash';
+
+import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import {
   ICondition,
   IConditionalLogic,
@@ -12,9 +15,7 @@ import {
   isFetchActionViemTransaction,
   ViemTransaction,
 } from '@lit-listener-sdk/types';
-import { PKPViemAccount } from '@altpd13/pkp-viem';
-import { createWalletClient } from 'viem';
-import * as _ from 'lodash';
+import { ConditionMonitorViem } from './condition-monitor-viem';
 
 export class CircuitViem extends CircuitBase {
   constructor(args: {
@@ -26,7 +27,6 @@ export class CircuitViem extends CircuitBase {
     actions: (FetchActionViemTransaction | ViemTransactionAction)[];
     authSig?: AuthSig;
     sessionSigs?: SessionSigs;
-    secureKey?: string;
   }) {
     super({
       monitor: new ConditionMonitorViem(),
@@ -38,7 +38,6 @@ export class CircuitViem extends CircuitBase {
       actions: args.actions,
       authSig: args.authSig,
       sessionSigs: args.sessionSigs,
-      secureKey: args.secureKey,
     });
   }
 
