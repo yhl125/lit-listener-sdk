@@ -13,25 +13,23 @@ describe('circuitZerodev', () => {
     // Mock the event callback to see that:
     const callback = jest.fn();
 
-    const userOperationAction: ZeroDevUserOperationAction = {
-      type: 'zerodev',
+    const userOperationAction = new ZeroDevUserOperationAction({
       projectId: '',
       userOp: {
         target: '0xAa0335b77B7a7c0D4B8c1f359155265CB9769d7e',
         data: '0x',
         value: 0n,
       },
-    };
+    });
 
-    const fetchAction: FetchActionZeroDevUserOperation = {
-      type: 'fetch-zerodev',
+    const fetchAction = new FetchActionZeroDevUserOperation({
       projectId: '',
       url: 'https://goerli.api.0x.org/swap/v1/quote?buyToken=WETH&sellToken=ETH&buyAmount=100',
       init: {
         headers: { '0x-api-key': '' },
       },
       responsePath: '',
-    };
+    });
 
     // This is a factory function
     const circuit = new CircuitZeroDev({

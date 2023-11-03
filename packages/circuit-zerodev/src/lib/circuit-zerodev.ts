@@ -13,14 +13,15 @@ import {
   ICondition,
   IConditionalLogic,
   IExecutionConstraints,
-  LogCategory,
   ViemTransaction,
   isFetchActionZeroDevUserOperation,
   isZeroDevUserOperationAction,
   FetchActionZeroDevUserOperation,
   ZeroDevUserOperationAction,
   UserOperationCallData,
+  IUserOperationLog,
 } from '@lit-listener-sdk/types';
+import ObjectID from 'bson-objectid';
 
 export class CircuitZeroDev extends CircuitBase {
   constructor(args: {
@@ -61,11 +62,11 @@ export class CircuitZeroDev extends CircuitBase {
             opts: action.opts,
           });
           const { hash } = await ecdsaProvider.sendUserOperation(action.userOp);
+          this.userOperationLog(action.id, hash, new Date().toISOString());
           const transactionHash =
             await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-          this.log(
-            LogCategory.RESPONSE,
-            'transactionHash',
+          this.transactionLog(
+            action.id,
             transactionHash,
             new Date().toISOString(),
           );
@@ -86,22 +87,22 @@ export class CircuitZeroDev extends CircuitBase {
               (transaction) => this.viemTransactionToUserOp(transaction),
             );
             const { hash } = await ecdsaProvider.sendUserOperation(userOps);
+            this.userOperationLog(action.id, hash, new Date().toISOString());
             const transactionHash =
               await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-            this.log(
-              LogCategory.RESPONSE,
-              'transactionHash',
+            this.transactionLog(
+              action.id,
               transactionHash,
               new Date().toISOString(),
             );
           } else {
             const userOp = this.viemTransactionToUserOp(transactions);
             const { hash } = await ecdsaProvider.sendUserOperation(userOp);
+            this.userOperationLog(action.id, hash, new Date().toISOString());
             const transactionHash =
               await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-            this.log(
-              LogCategory.RESPONSE,
-              'transactionHash',
+            this.transactionLog(
+              action.id,
               transactionHash,
               new Date().toISOString(),
             );
@@ -115,10 +116,9 @@ export class CircuitZeroDev extends CircuitBase {
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);
-      this.log(
-        LogCategory.ERROR,
-        `Lit Action failed.`,
-        message,
+      this.circuitLog(
+        'error',
+        `Lit Action failed. ${message}`,
         new Date().toISOString(),
       );
     }
@@ -133,4 +133,18 @@ export class CircuitZeroDev extends CircuitBase {
       value: transaction.value ? BigInt(transaction.value) : undefined,
     };
   }
+
+  private userOperationLog = (
+    actionId: ObjectID,
+    userOperationHash: string,
+    isoDate: string,
+  ) => {
+    const log: IUserOperationLog = {
+      circuitId: this.id,
+      actionId,
+      userOperationHash,
+      isoDate,
+    };
+    this.emitAsync(`userOperationLog`, log);
+  };
 }

@@ -62,7 +62,7 @@ export class ConditionMonitorViem extends ConditionMonitorBase {
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);
-      this.emit('conditionError', message, condition);
+      this.emit('conditionError', condition.id, message);
       throw new Error(`Error in Contract Action: ${message}`);
     }
   };
@@ -98,7 +98,7 @@ export class ConditionMonitorViem extends ConditionMonitorBase {
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);
-      this.emit('conditionError', message, condition);
+      this.emit('conditionError', condition.id, message);
       throw new Error(`Error in Contract Action: ${message}`);
     }
   };

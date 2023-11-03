@@ -34,13 +34,12 @@ describe('CircuitViem', () => {
         },
       },
     });
-    const transactionAction: ViemTransactionAction = {
-      type: 'viem',
+    const transactionAction = new ViemTransactionAction({
       chain: chronicle,
       transport: http(),
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
-    };
+    });
 
     // This is a factory function
     const circuit = new CircuitViem({
@@ -91,13 +90,12 @@ describe('CircuitViem', () => {
         },
       },
     });
-    const transactionAction: ViemTransactionAction = {
-      type: 'viem',
+    const transactionAction = new ViemTransactionAction({
       chain: chronicle,
       transport: http(),
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
-    };
+    });
     const abi = parseAbi([
       'event Transfer(address indexed from, address indexed to, uint256 amount)',
     ]);
@@ -164,13 +162,12 @@ describe('CircuitViem', () => {
         },
       },
     });
-    const transactionAction: ViemTransactionAction = {
-      type: 'viem',
+    const transactionAction = new ViemTransactionAction({
       chain: chronicle,
       transport: http(),
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
-    };
+    });
 
     const webhookCondition = new WebhookCondition({
       url: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
@@ -213,8 +210,7 @@ describe('CircuitViem', () => {
     // Mock the event callback to see that:
     const callback = jest.fn();
 
-    const fetchAction: FetchActionViemTransaction = {
-      type: 'fetch-viem',
+    const fetchAction = new FetchActionViemTransaction({
       chain: goerli,
       transport: http('https://ethereum-goerli.publicnode.com'),
       url: 'https://goerli.api.0x.org/swap/v1/quote?buyToken=WETH&sellToken=ETH&buyAmount=100',
@@ -223,7 +219,7 @@ describe('CircuitViem', () => {
       },
       responsePath: '',
       ignoreGas: true,
-    };
+    });
 
     // This is a factory function
     const circuit = new CircuitViem({

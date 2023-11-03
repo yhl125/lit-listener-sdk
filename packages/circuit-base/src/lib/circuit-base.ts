@@ -1,19 +1,24 @@
 import * as LitJsSdk from '@lit-protocol/lit-node-client';
 import { EventEmitter2 } from 'eventemitter2';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
+import ObjectID from 'bson-objectid';
 
 import {
   IAction,
+  ICheckWhenConditionMetLog,
+  ICircuitLog,
   ICondition,
+  IConditionLog,
   IConditionalLogic,
   IExecutionConstraints,
-  ILogEntry,
-  LogCategory,
+  ITransactionLog,
   RunStatus,
 } from '@lit-listener-sdk/types';
 import { ConditionMonitorBase } from './condition-monitor-base';
 
 export abstract class CircuitBase extends EventEmitter2 {
+  id = ObjectID();
+
   /**
    * Boolean for locking start into one concurrent run.
    * @private
@@ -38,7 +43,7 @@ export abstract class CircuitBase extends EventEmitter2 {
    * Set of condition IDs that have been satisfied.
    * @private
    */
-  private satisfiedConditions: Set<string> = new Set();
+  private satisfiedConditions: Set<ObjectID> = new Set();
   /**
    * The array of actions to be executed.
    * @protected
@@ -74,16 +79,6 @@ export abstract class CircuitBase extends EventEmitter2 {
    * @private
    */
   private maxLitActionCompletions?: number;
-  /**
-   * The array of log messages.
-   * @private
-   */
-  private logs: ILogEntry[] = [];
-  /**
-   * The current index of the log array.
-   * @private
-   */
-  private logIndex = 0;
   /**
    * The LitNodeClient instance for interacting with Lit Protocol.
    * @private
@@ -154,7 +149,7 @@ export abstract class CircuitBase extends EventEmitter2 {
     this.monitor.on(
       'conditionMatched',
       async (
-        conditionId: string,
+        conditionId: ObjectID,
         emittedValue:
           | number
           | string
@@ -167,10 +162,10 @@ export abstract class CircuitBase extends EventEmitter2 {
           | (string | number | bigint | object)[],
       ) => {
         this.satisfiedConditions.add(conditionId);
-        this.log(
-          LogCategory.CONDITION,
-          `Condition Matched with Emitted Value: `,
-          JSON.stringify(emittedValue),
+        this.conditionLog(
+          'matched',
+          conditionId,
+          emittedValue,
           new Date().toISOString(),
         );
         await this.checkWhenConditionMet();
@@ -179,7 +174,7 @@ export abstract class CircuitBase extends EventEmitter2 {
     this.monitor.on(
       'conditionNotMatched',
       (
-        conditionId: string,
+        conditionId: ObjectID,
         emittedValue:
           | number
           | string
@@ -192,26 +187,27 @@ export abstract class CircuitBase extends EventEmitter2 {
           | (string | number | bigint | object)[],
       ) => {
         this.satisfiedConditions.delete(conditionId);
-        this.log(
-          LogCategory.CONDITION,
-          `Condition Not Matched with Emitted Value: `,
-          JSON.stringify(emittedValue),
+        this.conditionLog(
+          'not matched',
+          conditionId,
+          emittedValue,
           new Date().toISOString(),
         );
       },
     );
     this.monitor.on(
       'conditionError',
-      (error: string, condition: ICondition) => {
-        this.log(
-          LogCategory.ERROR,
-          `Error in condition monitoring with condition ${condition}`,
+      (conditionId: ObjectID, error: string) => {
+        this.conditionLog(
+          'error',
+          conditionId,
           error,
           new Date().toISOString(),
         );
       },
     );
     this.on('stop', () => {
+      this.circuitLog('stop', 'Circuit stopped', new Date().toISOString());
       this.isRunning = false;
       this.monitor.removeAllListeners();
     });
@@ -242,17 +238,15 @@ export abstract class CircuitBase extends EventEmitter2 {
         conditionPromises.push(conditionPromise);
       }
       await Promise.all(conditionPromises);
-      this.log(
-        LogCategory.CONDITION,
-        'Set conditions successfully.',
-        '',
+      this.circuitLog(
+        'started',
+        'Circuit started with conditions',
         new Date().toISOString(),
       );
     } else {
-      this.log(
-        LogCategory.CONDITION,
-        'No conditions set, skipping condition checks.',
-        '',
+      this.circuitLog(
+        'started',
+        'Circuit started without conditions',
         new Date().toISOString(),
       );
       await this.checkWhenConditionMet();
@@ -262,93 +256,48 @@ export abstract class CircuitBase extends EventEmitter2 {
   abstract runActions(): Promise<void>;
 
   /**
-   * Returns the logs of the circuit. 1000 logs are recorded on a rolling basis.
-   * @param category - Optional. Returns logs of a specific type i.e. error, response, condition. If no category is passed then all logs are returned.
-   * @returns The logs of the circuit.
-   */
-  getLogs = (category?: LogCategory): ILogEntry[] => {
-    const logsInOrder = [
-      ...this.logs.slice(this.logIndex),
-      ...this.logs.slice(0, this.logIndex),
-    ].filter((log) => log !== undefined);
-
-    if (!category) {
-      return logsInOrder;
-    }
-
-    return logsInOrder.filter((log) => log.category === category);
-  };
-
-  /**
    * Forcefully interrupts the circuit.
    */
   interrupt = () => {
-    this.emit('stop');
-    this.log(
-      LogCategory.ERROR,
-      'Circuit forcefully interrupted at ',
-      `${Date.now()}`,
+    this.circuitLog(
+      'stop',
+      'Circuit forcefully interrupted',
       new Date().toISOString(),
     );
+    this.emit('stop');
   };
 
   private checkWhenConditionMet = async (): Promise<void> => {
-    const conditionResBefore = this.checkConditionalLogicAndRun();
-    const executionResBefore = this.checkExecutionLimitations();
+    const conditionLogicStatus = this.checkConditionalLogicAndRun();
+    const executionLimitStatus = this.checkExecutionLimitations();
 
     this.conditionExecutedCount++;
-    this.log(
-      LogCategory.EXECUTION,
-      'Condition Monitor Count Increased',
-      String(this.conditionExecutedCount),
-      new Date().toISOString(),
-    );
     if (
-      conditionResBefore === RunStatus.ACTION_RUN &&
-      executionResBefore === RunStatus.ACTION_RUN
+      conditionLogicStatus === RunStatus.ACTION_RUN &&
+      executionLimitStatus === RunStatus.ACTION_RUN
     ) {
+      this.checkWhenConditionMetLog('action', new Date().toISOString());
       await this.runActions();
-      const executionResAfter = this.checkExecutionLimitations();
-      if (executionResAfter === RunStatus.EXIT_RUN) {
-        this.log(
-          LogCategory.CONDITION,
-          `Execution Condition Not Met to Continue Circuit.`,
-          `Run Status ${RunStatus.EXIT_RUN}`,
+      const executionLimitStatusAfterRun = this.checkExecutionLimitations();
+      if (executionLimitStatusAfterRun === RunStatus.EXIT_RUN) {
+        this.checkWhenConditionMetLog(
+          'exit after action',
           new Date().toISOString(),
         );
         this.emit('stop');
         return;
       }
-    } else if (
-      conditionResBefore === RunStatus.EXIT_RUN ||
-      executionResBefore === RunStatus.EXIT_RUN
-    ) {
-      this.log(
-        LogCategory.CONDITION,
-        `Execution Condition Not Met to Continue Circuit.`,
-        `Run Status ${RunStatus.EXIT_RUN}`,
-        new Date().toISOString(),
-      );
-      this.emit('stop');
-      return;
     }
-
-    // check again in case of CONTINUE_RUN status
-    const conditionResEnd = this.checkConditionalLogicAndRun();
-    const executionResEnd = this.checkExecutionLimitations();
     if (
-      conditionResEnd === RunStatus.EXIT_RUN ||
-      executionResEnd === RunStatus.EXIT_RUN
+      conditionLogicStatus === RunStatus.EXIT_RUN ||
+      executionLimitStatus === RunStatus.EXIT_RUN
     ) {
-      this.log(
-        LogCategory.CONDITION,
-        `Execution Condition Not Met to Continue Circuit.`,
-        `Run Status ${RunStatus.EXIT_RUN}`,
-        new Date().toISOString(),
-      );
+      this.checkWhenConditionMetLog('exit', new Date().toISOString());
       this.emit('stop');
       return;
     }
+    this.checkWhenConditionMetLog('continue', new Date().toISOString());
+    return;
   };
 
   /**
@@ -440,21 +389,64 @@ export abstract class CircuitBase extends EventEmitter2 {
    * @param message - The response object to log.
    * @param message - The iso date to log.
    */
-  protected log = (
-    category: LogCategory,
+  protected circuitLog = (
+    status: 'started' | 'stop' | 'error',
     message: string,
-    response: string,
     isoDate: string,
   ) => {
-    this.logs[this.logIndex] = { category, message, response, isoDate };
-    this.logIndex = this.logIndex + 1;
-    this.emit(
-      'log',
-      JSON.stringify({
-        message,
-        response,
-        isoDate,
-      }),
-    );
+    const log: ICircuitLog = {
+      circuitId: this.id,
+      status,
+      message,
+      isoDate,
+    };
+    this.emitAsync(`circuitLog`, log);
+  };
+
+  private conditionLog = (
+    status: 'matched' | 'not matched' | 'error',
+    conditionId: ObjectID,
+    emittedValue:
+      | number
+      | string
+      | bigint
+      | object
+      | (string | number | bigint | object)[],
+    isoDate: string,
+  ) => {
+    const log: IConditionLog = {
+      circuitId: this.id,
+      conditionId,
+      status,
+      emittedValue,
+      isoDate,
+    };
+    this.emitAsync(`conditionLog`, log);
+  };
+
+  private checkWhenConditionMetLog = (
+    status: 'action' | 'continue' | 'exit' | 'exit after action',
+    isoDate: string,
+  ) => {
+    const log: ICheckWhenConditionMetLog = {
+      circuitId: this.id,
+      status,
+      isoDate,
+    };
+    this.emitAsync(`checkWhenConditionMetLog`, log);
+  };
+
+  protected transactionLog = (
+    actionId: ObjectID,
+    transactionHash: string,
+    isoDate: string,
+  ) => {
+    const log: ITransactionLog = {
+      circuitId: this.id,
+      actionId,
+      transactionHash,
+      isoDate,
+    };
+    this.emitAsync(`transactionLog`, log);
   };
 }

@@ -49,7 +49,7 @@ export abstract class ConditionMonitorBase extends EventEmitter2 {
         let message;
         if (error instanceof Error) message = error.message;
         else message = String(error);
-        this.emit('conditionError', message, condition);
+        this.emit('conditionError', condition.id, message);
         throw new Error(`Error in Webhook Action: ${message}`);
       }
     };
@@ -122,9 +122,9 @@ export abstract class ConditionMonitorBase extends EventEmitter2 {
 
     try {
       if (match) {
-        this.emit('conditionMatched', condition, emittedValue);
+        this.emit('conditionMatched', condition.id, emittedValue);
       } else {
-        this.emit('conditionNotMatched', condition, emittedValue);
+        this.emit('conditionNotMatched', condition.id, emittedValue);
       }
     } catch (error) {
       let message;
@@ -149,11 +149,6 @@ export abstract class ConditionMonitorBase extends EventEmitter2 {
     emittedValue: number | string | bigint | object,
     operator: string,
   ): boolean => {
-    this.emit(
-      'conditionNotMatched',
-      '',
-      `emittedValue: ${emittedValue}, expectedValue: ${expectedValue}, operator: ${operator}`,
-    );
     if (typeof emittedValue === 'object' || typeof expectedValue === 'object') {
       switch (operator) {
         case '==':

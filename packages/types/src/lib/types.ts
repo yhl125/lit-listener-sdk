@@ -1,3 +1,5 @@
+import ObjectID from 'bson-objectid';
+
 /**
  * @enum RunStatus
  * @description Represents the status of the circuit run.
@@ -15,17 +17,37 @@ export interface IExecutionConstraints {
   maxLitActionCompletions?: number;
 }
 
-export enum LogCategory {
-  ERROR = 0,
-  RESPONSE = 1,
-  CONDITION = 2,
-  BROADCAST = 3,
-  EXECUTION = 4,
+interface ILog {
+  circuitId: ObjectID;
+  isoDate: string;
 }
 
-export interface ILogEntry {
-  category: LogCategory;
+export interface ICircuitLog extends ILog {
+  status: 'started' | 'stop' | 'error';
   message: string;
-  response: string;
-  isoDate: string;
+}
+
+export interface IConditionLog extends ILog {
+  conditionId: ObjectID;
+  status: 'matched' | 'not matched' | 'error';
+  emittedValue:
+    | number
+    | string
+    | bigint
+    | object
+    | (string | number | bigint | object)[];
+}
+
+export interface ITransactionLog extends ILog {
+  actionId: ObjectID;
+  transactionHash: string;
+}
+
+export interface IUserOperationLog extends ILog {
+  actionId: ObjectID;
+  userOperationHash: string;
+}
+
+export interface ICheckWhenConditionMetLog extends ILog {
+  status: 'action' | 'continue' | 'exit' | 'exit after action';
 }

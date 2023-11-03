@@ -10,7 +10,6 @@ import {
   IExecutionConstraints,
   FetchActionViemTransaction,
   ViemTransactionAction,
-  LogCategory,
   isViemTransactionAction,
   isFetchActionViemTransaction,
   ViemTransaction,
@@ -86,12 +85,7 @@ export class CircuitViem extends CircuitBase {
                 nonce: action.nonce,
                 value: action.value ? BigInt(action.value) : undefined,
               });
-          this.log(
-            LogCategory.RESPONSE,
-            'transactionHash',
-            hash,
-            new Date().toISOString(),
-          );
+          this.transactionLog(action.id, hash, new Date().toISOString());
         } else if (isFetchActionViemTransaction(action)) {
           const response = await fetch(action.url, action.init);
           const json = await response.json();
@@ -137,12 +131,7 @@ export class CircuitViem extends CircuitBase {
                     nonce: tx.nonce,
                     value: tx.value ? BigInt(tx.value) : undefined,
                   });
-              this.log(
-                LogCategory.RESPONSE,
-                'transactionHash',
-                hash,
-                new Date().toISOString(),
-              );
+              this.transactionLog(action.id, hash, new Date().toISOString());
             }
           } else {
             if (action.ignoreGas) {
@@ -182,12 +171,7 @@ export class CircuitViem extends CircuitBase {
                     ? BigInt(transactions.value)
                     : undefined,
                 });
-            this.log(
-              LogCategory.RESPONSE,
-              'transactionHash',
-              hash,
-              new Date().toISOString(),
-            );
+            this.transactionLog(action.id, hash, new Date().toISOString());
           }
         } else {
           throw new Error(`Unknown action type: ${action.type}`);
@@ -198,10 +182,9 @@ export class CircuitViem extends CircuitBase {
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);
-      this.log(
-        LogCategory.ERROR,
-        `Lit Action failed.`,
-        message,
+      this.circuitLog(
+        'error',
+        `Lit Action failed. ${message}`,
         new Date().toISOString(),
       );
     }
