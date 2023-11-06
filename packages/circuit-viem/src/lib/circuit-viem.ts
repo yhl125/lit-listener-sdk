@@ -1,6 +1,6 @@
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
 import { PKPViemAccount } from '@altpd13/pkp-viem';
-import { createWalletClient } from 'viem';
+import { createWalletClient, verifyMessage } from 'viem';
 import * as _ from 'lodash';
 
 import { CircuitBase } from '@lit-listener-sdk/circuit-base';
@@ -188,5 +188,20 @@ export class CircuitViem extends CircuitBase {
         new Date().toISOString(),
       );
     }
+  }
+
+  async updateSessionSigs(sessionSigs: SessionSigs) {
+    const account = new PKPViemAccount({
+      controllerSessionSigs: this.sessionSigs,
+      pkpPubKey: this.pkpPubKey,
+    });
+    const signature = await account.signMessage({ message: '' });
+    const valid = await verifyMessage({
+      address: account.address,
+      message: '',
+      signature,
+    });
+    if (!valid) throw new Error('Invalid sessionSigs');
+    this.sessionSigs = sessionSigs;
   }
 }

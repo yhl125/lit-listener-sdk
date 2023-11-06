@@ -207,9 +207,10 @@ export abstract class CircuitBase extends EventEmitter2 {
       },
     );
     this.on('stop', () => {
-      this.circuitLog('stop', 'Circuit stopped', new Date().toISOString());
+      this.circuitLogSync('stop', 'Circuit stopped', new Date().toISOString());
       this.isRunning = false;
       this.monitor.removeAllListeners();
+      this.removeAllListeners();
     });
   }
 
@@ -259,7 +260,7 @@ export abstract class CircuitBase extends EventEmitter2 {
    * Forcefully interrupts the circuit.
    */
   interrupt = () => {
-    this.circuitLog(
+    this.circuitLogSync(
       'stop',
       'Circuit forcefully interrupted',
       new Date().toISOString(),
@@ -382,13 +383,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     }
   };
 
-  /**
-   * Logs a message.
-   * @param category - The type of message to log.
-   * @param message - The message to log.
-   * @param message - The response object to log.
-   * @param message - The iso date to log.
-   */
   protected circuitLog = (
     status: 'started' | 'stop' | 'error',
     message: string,
@@ -401,6 +395,20 @@ export abstract class CircuitBase extends EventEmitter2 {
       isoDate,
     };
     this.emitAsync(`circuitLog`, log);
+  };
+
+  private circuitLogSync = (
+    status: 'started' | 'stop' | 'error',
+    message: string,
+    isoDate: string,
+  ) => {
+    const log: ICircuitLog = {
+      circuitId: this.id,
+      status,
+      message,
+      isoDate,
+    };
+    this.emit(`circuitLog`, log);
   };
 
   private conditionLog = (
