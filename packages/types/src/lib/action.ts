@@ -1,10 +1,10 @@
 import { ValidatorProviderParamsOpts } from '@zerodev/sdk';
 import { ECDSAValidatorParams } from '@zerodev/sdk/dist/types/kernel-zerodev/validator/ecdsa-validator';
-import ObjectID from 'bson-objectid';
+import { ObjectId } from 'bson';
 import { AccessList, Address, Chain, Hex, Transport } from 'viem';
 
 export interface IAction {
-  id: ObjectID;
+  id: ObjectId;
   type: string;
 }
 
@@ -45,7 +45,7 @@ export interface UserOperationCallData {
 }
 
 export class FetchActionViemTransaction implements FetchActionBase {
-  id: ObjectID;
+  id: ObjectId;
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -62,7 +62,7 @@ export class FetchActionViemTransaction implements FetchActionBase {
     transport: Transport;
     ignoreGas?: boolean;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -74,7 +74,7 @@ export class FetchActionViemTransaction implements FetchActionBase {
 }
 
 export class ViemTransactionAction implements IAction, ViemTransaction {
-  id: ObjectID;
+  id: ObjectId;
   to: Address;
   accessList?: AccessList;
   data?: Hex;
@@ -101,7 +101,7 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
     value?: bigint | number | string;
     ignoreGas?: boolean;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.to = args.to;
     this.accessList = args.accessList;
     this.data = args.data;
@@ -118,7 +118,7 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
 }
 
 export class FetchActionZeroDevUserOperation implements FetchActionBase {
-  id: ObjectID;
+  id: ObjectId;
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -133,7 +133,7 @@ export class FetchActionZeroDevUserOperation implements FetchActionBase {
     init?: RequestInit;
     opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -144,7 +144,7 @@ export class FetchActionZeroDevUserOperation implements FetchActionBase {
 }
 
 export class ZeroDevUserOperationAction implements IAction {
-  id: ObjectID;
+  id: ObjectId;
   type: 'zerodev';
   projectId: string;
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
@@ -155,7 +155,7 @@ export class ZeroDevUserOperationAction implements IAction {
     opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
     userOp: UserOperationCallData | UserOperationCallData[];
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.type = 'zerodev';
     this.projectId = args.projectId;
     this.opts = args.opts;

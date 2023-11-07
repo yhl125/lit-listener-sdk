@@ -1,7 +1,7 @@
 import * as LitJsSdk from '@lit-protocol/lit-node-client';
 import { EventEmitter2 } from 'eventemitter2';
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
-import ObjectID from 'bson-objectid';
+import { ObjectId } from 'bson';
 
 import {
   IAction,
@@ -17,7 +17,7 @@ import {
 import { ConditionMonitorBase } from './condition-monitor-base';
 
 export abstract class CircuitBase extends EventEmitter2 {
-  id = ObjectID();
+  id = new ObjectId();
   /**
    * The public key of the PKP.
    */
@@ -46,7 +46,7 @@ export abstract class CircuitBase extends EventEmitter2 {
    * Set of condition IDs that have been satisfied.
    * @private
    */
-  private satisfiedConditions: Set<ObjectID> = new Set();
+  private satisfiedConditions: Set<ObjectId> = new Set();
   /**
    * The array of actions to be executed.
    * @protected
@@ -146,7 +146,7 @@ export abstract class CircuitBase extends EventEmitter2 {
     this.monitor.on(
       'conditionMatched',
       async (
-        conditionId: ObjectID,
+        conditionId: ObjectId,
         emittedValue:
           | number
           | string
@@ -171,7 +171,7 @@ export abstract class CircuitBase extends EventEmitter2 {
     this.monitor.on(
       'conditionNotMatched',
       (
-        conditionId: ObjectID,
+        conditionId: ObjectId,
         emittedValue:
           | number
           | string
@@ -194,7 +194,7 @@ export abstract class CircuitBase extends EventEmitter2 {
     );
     this.monitor.on(
       'conditionError',
-      (conditionId: ObjectID, error: string) => {
+      (conditionId: ObjectId, error: string) => {
         this.conditionLog(
           'error',
           conditionId,
@@ -407,7 +407,7 @@ export abstract class CircuitBase extends EventEmitter2 {
 
   private conditionLog = (
     status: 'matched' | 'not matched' | 'error',
-    conditionId: ObjectID,
+    conditionId: ObjectId,
     emittedValue:
       | number
       | string
@@ -439,7 +439,7 @@ export abstract class CircuitBase extends EventEmitter2 {
   };
 
   protected transactionLog = (
-    actionId: ObjectID,
+    actionId: ObjectId,
     transactionHash: string,
     isoDate: string,
   ) => {

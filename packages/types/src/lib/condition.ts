@@ -1,9 +1,9 @@
 import { Abi, Address, Transport } from 'viem';
 import { AbiEvent } from 'abitype';
-import ObjectID from 'bson-objectid';
+import { ObjectId } from 'bson';
 
 export interface ICondition {
-  id: ObjectID;
+  id: ObjectId;
   expectedValue:
     | number
     | string
@@ -25,7 +25,7 @@ export interface IWebhookCondition extends ICondition {
 }
 
 export class WebhookCondition implements IWebhookCondition {
-  id: ObjectID;
+  id: ObjectId;
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -57,7 +57,7 @@ export class WebhookCondition implements IWebhookCondition {
      */
     interval: number;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -78,7 +78,7 @@ export interface IViemContractCondition extends ICondition {
 }
 
 export class ViemContractCondition implements IViemContractCondition {
-  id: ObjectID;
+  id: ObjectId;
   abi: Abi;
   transport: Transport;
   expectedValue:
@@ -113,7 +113,7 @@ export class ViemContractCondition implements IViemContractCondition {
     batch?: boolean;
     pollingInterval?: number;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.abi = args.abi;
     this.transport = args.transport;
     this.expectedValue = args.expectedValue;
@@ -136,7 +136,7 @@ export interface IViemEventCondition extends ICondition {
 }
 
 export class ViemEventCondition implements IViemEventCondition {
-  id: ObjectID;
+  id: ObjectId;
   expectedValue:
     | number
     | string
@@ -169,7 +169,7 @@ export class ViemEventCondition implements IViemEventCondition {
     batch?: boolean;
     pollingInterval?: number;
   }) {
-    this.id = ObjectID();
+    this.id = new ObjectId();
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
     this.transport = args.transport;

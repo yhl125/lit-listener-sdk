@@ -43,7 +43,7 @@ describe('CircuitViem', () => {
 
     // This is a factory function
     const circuit = new CircuitViem({
-      litNetwork: 'serrano',
+      litNetwork: 'cayenne',
       pkpPubKey: PKP_PUBKEY,
       conditions: [],
       conditionalLogic: { type: 'EVERY' },
@@ -113,7 +113,7 @@ describe('CircuitViem', () => {
 
     // This is a factory function
     const circuit = new CircuitViem({
-      litNetwork: 'serrano',
+      litNetwork: 'cayenne',
       pkpPubKey: PKP_PUBKEY,
       conditions: [contractCondition],
       conditionalLogic: { type: 'EVERY' },
@@ -179,7 +179,7 @@ describe('CircuitViem', () => {
 
     // This is a factory function
     const circuit = new CircuitViem({
-      litNetwork: 'serrano',
+      litNetwork: 'cayenne',
       pkpPubKey: PKP_PUBKEY,
       conditions: [webhookCondition],
       conditionalLogic: { type: 'EVERY' },
@@ -223,7 +223,7 @@ describe('CircuitViem', () => {
 
     // This is a factory function
     const circuit = new CircuitViem({
-      litNetwork: 'serrano',
+      litNetwork: 'cayenne',
       pkpPubKey: PKP_PUBKEY,
       conditions: [],
       conditionalLogic: { type: 'EVERY' },

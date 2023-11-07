@@ -33,7 +33,7 @@ describe('circuitZerodev', () => {
 
     // This is a factory function
     const circuit = new CircuitZeroDev({
-      litNetwork: 'serrano',
+      litNetwork: 'cayenne',
       pkpPubKey: PKP_PUBKEY,
       conditions: [],
       conditionalLogic: { type: 'EVERY' },

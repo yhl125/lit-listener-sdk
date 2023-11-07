@@ -21,7 +21,7 @@ import {
   UserOperationCallData,
   IUserOperationLog,
 } from '@lit-listener-sdk/types';
-import ObjectID from 'bson-objectid';
+import { ObjectId } from 'bson';
 import { mainnet } from 'viem/chains';
 
 export class CircuitZeroDev extends CircuitBase {
@@ -142,7 +142,7 @@ export class CircuitZeroDev extends CircuitBase {
   }
 
   private userOperationLog = (
-    actionId: ObjectID,
+    actionId: ObjectId,
     userOperationHash: string,
     isoDate: string,
   ) => {

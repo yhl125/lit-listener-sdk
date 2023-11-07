@@ -1,4 +1,4 @@
-import ObjectID from 'bson-objectid';
+import { ObjectId } from 'bson';
 
 /**
  * @enum RunStatus
@@ -18,7 +18,7 @@ export interface IExecutionConstraints {
 }
 
 interface ILog {
-  circuitId: ObjectID;
+  circuitId: ObjectId;
   isoDate: string;
 }
 
@@ -28,7 +28,7 @@ export interface ICircuitLog extends ILog {
 }
 
 export interface IConditionLog extends ILog {
-  conditionId: ObjectID;
+  conditionId: ObjectId;
   status: 'matched' | 'not matched' | 'error';
   emittedValue:
     | number
@@ -39,12 +39,12 @@ export interface IConditionLog extends ILog {
 }
 
 export interface ITransactionLog extends ILog {
-  actionId: ObjectID;
+  actionId: ObjectId;
   transactionHash: string;
 }
 
 export interface IUserOperationLog extends ILog {
-  actionId: ObjectID;
+  actionId: ObjectId;
   userOperationHash: string;
 }
 
