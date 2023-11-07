@@ -1,8 +1,11 @@
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
-import { PKPViemAccount, convertAccountToSmartAccountSigner } from 'pkp-viem';
+import { PKPViemAccount } from 'pkp-viem';
 import * as _ from 'lodash';
-import { ECDSAProvider } from '@zerodev/sdk';
-import { Hash } from 'viem';
+import {
+  ECDSAProvider,
+  convertWalletClientToAccountSigner,
+} from '@zerodev/sdk';
+import { Hash, createWalletClient, http } from 'viem';
 
 import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { ConditionMonitorViem } from '@lit-listener-sdk/circuit-viem';
@@ -19,6 +22,7 @@ import {
   IUserOperationLog,
 } from '@lit-listener-sdk/types';
 import ObjectID from 'bson-objectid';
+import { mainnet } from 'viem/chains';
 
 export class CircuitZeroDev extends CircuitBase {
   constructor(args: {
@@ -50,12 +54,18 @@ export class CircuitZeroDev extends CircuitBase {
       controllerSessionSigs: this.sessionSigs,
       pkpPubKey: this.pkpPubKey,
     });
+    const walletClient = createWalletClient({
+      account: account,
+      transport: http(),
+      chain: mainnet,
+    });
+
     try {
       for (const action of this.actions) {
         if (isZeroDevUserOperationAction(action)) {
           const ecdsaProvider = await ECDSAProvider.init({
             projectId: action.projectId,
-            owner: convertAccountToSmartAccountSigner(account),
+            owner: convertWalletClientToAccountSigner(walletClient),
             opts: action.opts,
           });
           const { hash } = await ecdsaProvider.sendUserOperation(action.userOp);
@@ -72,7 +82,7 @@ export class CircuitZeroDev extends CircuitBase {
           const json = await response.json();
           const ecdsaProvider = await ECDSAProvider.init({
             projectId: action.projectId,
-            owner: convertAccountToSmartAccountSigner(account),
+            owner: convertWalletClientToAccountSigner(walletClient),
             opts: action.opts,
           });
           let transactions: ViemTransaction | ViemTransaction[];
