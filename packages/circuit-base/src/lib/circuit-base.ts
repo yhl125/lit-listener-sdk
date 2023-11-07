@@ -18,7 +18,10 @@ import { ConditionMonitorBase } from './condition-monitor-base';
 
 export abstract class CircuitBase extends EventEmitter2 {
   id = ObjectID();
-
+  /**
+   * The public key of the PKP.
+   */
+  pkpPubKey: string;
   /**
    * Boolean for locking start into one concurrent run.
    * @private
@@ -85,11 +88,6 @@ export abstract class CircuitBase extends EventEmitter2 {
    */
   private litClient: LitJsSdk.LitNodeClient;
   /**
-   * The public key of the PKP.
-   * @protected
-   */
-  protected pkpPubKey: string;
-  /**
    * The authentication signature for executing Lit Actions.
    * @protected
    */
@@ -102,7 +100,6 @@ export abstract class CircuitBase extends EventEmitter2 {
 
   /**
    * Creates an instance of Circuit.
-   * @param pkpContractAddress The address of the PKPNFT contract.
    */
   constructor(args: {
     monitor: ConditionMonitorBase;
@@ -216,10 +213,6 @@ export abstract class CircuitBase extends EventEmitter2 {
 
   /**
    * Starts the circuit with the specified parameters.
-   * @param publicKey The public key of the PKP contract.
-   * @param ipfsCID The IPFS CID of the Lit Action code.
-   * @param authSig Optional. The authentication signature for executing Lit Actions.
-   * @param secureKey Optional. The secureKey required to run the LitAction if set during setActions.
    * @throws {Error} If an error occurs while running the circuit.
    */
   start = async (): Promise<void> => {
@@ -256,10 +249,7 @@ export abstract class CircuitBase extends EventEmitter2 {
 
   abstract runActions(): Promise<void>;
 
-  /**
-   * Forcefully interrupts the circuit.
-   */
-  interrupt = () => {
+  terminate = () => {
     this.circuitLogSync(
       'stop',
       'Circuit forcefully interrupted',
@@ -267,6 +257,10 @@ export abstract class CircuitBase extends EventEmitter2 {
     );
     this.emit('stop');
   };
+
+  updateSessionSigs(sessionSigs: SessionSigs) {
+    this.sessionSigs = sessionSigs;
+  }
 
   private checkWhenConditionMet = async (): Promise<void> => {
     const conditionLogicStatus = this.checkConditionalLogicAndRun();

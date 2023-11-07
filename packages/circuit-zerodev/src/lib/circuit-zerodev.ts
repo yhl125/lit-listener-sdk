@@ -147,19 +147,4 @@ export class CircuitZeroDev extends CircuitBase {
     };
     this.emitAsync(`userOperationLog`, log);
   };
-
-  async updateSessionSigs(sessionSigs: SessionSigs) {
-    const account = new PKPViemAccount({
-      controllerSessionSigs: this.sessionSigs,
-      pkpPubKey: this.pkpPubKey,
-    });
-    const signature = await account.signMessage({ message: '' });
-    const valid = await verifyMessage({
-      address: account.address,
-      message: '',
-      signature,
-    });
-    if (!valid) throw new Error('Invalid sessionSigs');
-    this.sessionSigs = sessionSigs;
-  }
 }
