@@ -5,15 +5,15 @@
   "scripts": {},
   "private": true,
   "dependencies": {
-    "@altpd13/pkp-viem": "^0.0.11",
-    "@lit-protocol/lit-node-client": "^2.2.61",
-    "@lit-protocol/types": "^2.2.61",
-    "@zerodev/sdk": "^4.0.30",
+    "pkp-viem": "^3.0.0",
+    "@lit-protocol/lit-node-client": "^3.0.16",
+    "@lit-protocol/types": "^3.0.16",
+    "@zerodev/sdk": "^4.2.1",
     "bson-objectid": "^2.0.4",
     "eventemitter2": "^6.4.9",
     "lodash": "^4.17.21",
     "tslib": "^2.6.2",
-    "viem": "^1.16.4"
+    "viem": "^1.18.8"
   },
   "devDependencies": {
     "@nx/eslint": "17.0.2",

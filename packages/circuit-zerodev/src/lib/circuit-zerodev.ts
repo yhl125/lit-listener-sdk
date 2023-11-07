@@ -1,11 +1,8 @@
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
-import {
-  PKPViemAccount,
-  convertAccountToSmartAccountSigner,
-} from '@altpd13/pkp-viem';
+import { PKPViemAccount, convertAccountToSmartAccountSigner } from 'pkp-viem';
 import * as _ from 'lodash';
 import { ECDSAProvider } from '@zerodev/sdk';
-import { Hash, verifyMessage } from 'viem';
+import { Hash } from 'viem';
 
 import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { ConditionMonitorViem } from '@lit-listener-sdk/circuit-viem';

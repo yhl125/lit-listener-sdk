@@ -1,6 +1,6 @@
 import { AuthSig, LIT_NETWORKS_KEYS, SessionSigs } from '@lit-protocol/types';
-import { PKPViemAccount } from '@altpd13/pkp-viem';
-import { createWalletClient, verifyMessage } from 'viem';
+import { PKPViemAccount } from 'pkp-viem';
+import { createWalletClient } from 'viem';
 import * as _ from 'lodash';
 
 import { CircuitBase } from '@lit-listener-sdk/circuit-base';
