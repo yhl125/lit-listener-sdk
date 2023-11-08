@@ -147,7 +147,6 @@ export class CircuitZeroDev extends CircuitBase {
     isoDate: string,
   ) => {
     const log: IUserOperationLog = {
-      circuitId: this.id,
       actionId,
       userOperationHash,
       isoDate,

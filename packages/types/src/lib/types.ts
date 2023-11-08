@@ -18,7 +18,6 @@ export interface IExecutionConstraints {
 }
 
 interface ILog {
-  circuitId: ObjectId;
   isoDate: string;
 }
 

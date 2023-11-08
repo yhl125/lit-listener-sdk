@@ -383,7 +383,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     isoDate: string,
   ) => {
     const log: ICircuitLog = {
-      circuitId: this.id,
       status,
       message,
       isoDate,
@@ -397,7 +396,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     isoDate: string,
   ) => {
     const log: ICircuitLog = {
-      circuitId: this.id,
       status,
       message,
       isoDate,
@@ -417,7 +415,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     isoDate: string,
   ) => {
     const log: IConditionLog = {
-      circuitId: this.id,
       conditionId,
       status,
       emittedValue,
@@ -431,7 +428,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     isoDate: string,
   ) => {
     const log: ICheckWhenConditionMetLog = {
-      circuitId: this.id,
       status,
       isoDate,
     };
@@ -444,7 +440,6 @@ export abstract class CircuitBase extends EventEmitter2 {
     isoDate: string,
   ) => {
     const log: ITransactionLog = {
-      circuitId: this.id,
       actionId,
       transactionHash,
       isoDate,
