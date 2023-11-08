@@ -26,6 +26,7 @@ import { mainnet } from 'viem/chains';
 
 export class CircuitZeroDev extends CircuitBase {
   constructor(args: {
+    id?: ObjectId;
     litNetwork: LIT_NETWORKS_KEYS;
     pkpPubKey: string;
     conditions: ICondition[];
@@ -36,6 +37,7 @@ export class CircuitZeroDev extends CircuitBase {
     sessionSigs?: SessionSigs;
   }) {
     super({
+      id: args.id,
       monitor: new ConditionMonitorViem(),
       litNetwork: args.litNetwork,
       pkpPubKey: args.pkpPubKey,

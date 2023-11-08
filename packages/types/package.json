@@ -1,6 +1,6 @@
 {
   "name": "@lit-listener-sdk/types",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "dependencies": {},
   "type": "commonjs",
   "main": "./src/index.js",

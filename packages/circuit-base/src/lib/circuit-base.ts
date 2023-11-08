@@ -17,7 +17,7 @@ import {
 import { ConditionMonitorBase } from './condition-monitor-base';
 
 export abstract class CircuitBase extends EventEmitter2 {
-  id = new ObjectId();
+  id: ObjectId;
   /**
    * The public key of the PKP.
    */
@@ -102,6 +102,7 @@ export abstract class CircuitBase extends EventEmitter2 {
    * Creates an instance of Circuit.
    */
   constructor(args: {
+    id?: ObjectId;
     monitor: ConditionMonitorBase;
     litNetwork: LIT_NETWORKS_KEYS;
     pkpPubKey: string;
@@ -118,7 +119,11 @@ export abstract class CircuitBase extends EventEmitter2 {
       );
     }
     super();
-    args.litNetwork;
+    if (args.id) {
+      this.id = args.id;
+    } else {
+      this.id = new ObjectId();
+    }
     this.litClient = new LitJsSdk.LitNodeClient({
       litNetwork: args.litNetwork,
       debug: false,

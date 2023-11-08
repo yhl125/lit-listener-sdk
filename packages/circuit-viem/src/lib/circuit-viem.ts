@@ -15,9 +15,11 @@ import {
   ViemTransaction,
 } from '@lit-listener-sdk/types';
 import { ConditionMonitorViem } from './condition-monitor-viem';
+import { ObjectId } from 'bson';
 
 export class CircuitViem extends CircuitBase {
   constructor(args: {
+    id?: ObjectId;
     litNetwork: LIT_NETWORKS_KEYS;
     pkpPubKey: string;
     conditions: ICondition[];
@@ -28,6 +30,7 @@ export class CircuitViem extends CircuitBase {
     sessionSigs?: SessionSigs;
   }) {
     super({
+      id: args.id,
       monitor: new ConditionMonitorViem(),
       litNetwork: args.litNetwork,
       pkpPubKey: args.pkpPubKey,
