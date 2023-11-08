@@ -383,7 +383,7 @@ export abstract class CircuitBase extends EventEmitter2 {
   };
 
   protected circuitLog = (
-    status: 'started' | 'stop' | 'error',
+    status: 'started' | 'action complete' | 'stop' | 'error',
     message: string,
     isoDate: string,
   ) => {

@@ -121,6 +121,11 @@ export class CircuitZeroDev extends CircuitBase {
         }
       }
       this.litActionCompletionCount++;
+      this.circuitLog(
+        'action complete',
+        `litActionCompletionCount increased to ${this.litActionCompletionCount}`,
+        new Date().toISOString(),
+      );
     } catch (error) {
       let message;
       if (error instanceof Error) message = error.message;

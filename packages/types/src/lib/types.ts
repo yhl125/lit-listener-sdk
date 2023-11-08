@@ -22,7 +22,7 @@ interface ILog {
 }
 
 export interface ICircuitLog extends ILog {
-  status: 'started' | 'stop' | 'error';
+  status: 'started' | 'action complete' | 'stop' | 'error';
   message: string;
 }
 
