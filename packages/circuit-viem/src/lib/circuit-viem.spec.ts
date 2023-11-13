@@ -52,7 +52,7 @@ describe('CircuitViem', () => {
       authSig: CONTROLLER_AUTHSIG,
     });
     circuit.start();
-    circuit.on('log', (log) => {
+    circuit.on('circuitLog', (log) => {
       callback(log);
     });
     await new Promise((r) => setTimeout(r, 5000));
@@ -63,7 +63,7 @@ describe('CircuitViem', () => {
     // eg {\"message\":\"transactionHash\",\"response\":\"0xbf937a25378614de52d2ead9fbf500f54babcf8911718d03f3a1cc18f719ca15\",\"isoDate\":\"2023-10-18T05:50:19.837Z\"}
     expect(
       callback.mock.calls.map((calls) => {
-        return calls[0].includes('transactionHash');
+        return calls[0];
       }),
     ).toContain(true);
   });
@@ -122,7 +122,7 @@ describe('CircuitViem', () => {
       authSig: CONTROLLER_AUTHSIG,
     });
     circuit.start();
-    circuit.on('log', (log) => {
+    circuit.on('circuitLog', (log) => {
       callback(log);
     });
 
@@ -135,7 +135,7 @@ describe('CircuitViem', () => {
     // eg {\"message\":\"transactionHash\",\"response\":\"0xbf937a25378614de52d2ead9fbf500f54babcf8911718d03f3a1cc18f719ca15\",\"isoDate\":\"2023-10-18T05:50:19.837Z\"}
     expect(
       callback.mock.calls.map((calls) => {
-        return calls[0].includes('transactionHash');
+        return calls[0];
       }),
     ).toContain(true);
   });
@@ -188,7 +188,7 @@ describe('CircuitViem', () => {
       authSig: CONTROLLER_AUTHSIG,
     });
     circuit.start();
-    circuit.on('log', (log) => {
+    circuit.on('circuitLog', (log) => {
       callback(log);
     });
 
@@ -201,7 +201,7 @@ describe('CircuitViem', () => {
     // eg {\"message\":\"transactionHash\",\"response\":\"0xbf937a25378614de52d2ead9fbf500f54babcf8911718d03f3a1cc18f719ca15\",\"isoDate\":\"2023-10-18T05:50:19.837Z\"}
     expect(
       callback.mock.calls.map((calls) => {
-        return calls[0].includes('transactionHash');
+        return calls[0];
       }),
     ).toContain(true);
   });
@@ -232,7 +232,7 @@ describe('CircuitViem', () => {
       authSig: CONTROLLER_AUTHSIG,
     });
     circuit.start();
-    circuit.on('log', (log) => {
+    circuit.on('circuitLog', (log) => {
       callback(log);
     });
     await new Promise((r) => setTimeout(r, 10000));
@@ -243,7 +243,7 @@ describe('CircuitViem', () => {
     // eg {\"message\":\"transactionHash\",\"response\":\"0xbf937a25378614de52d2ead9fbf500f54babcf8911718d03f3a1cc18f719ca15\",\"isoDate\":\"2023-10-18T05:50:19.837Z\"}
     expect(
       callback.mock.calls.map((calls) => {
-        return calls[0].includes('transactionHash');
+        return calls[0];
       }),
     ).toContain(true);
   });

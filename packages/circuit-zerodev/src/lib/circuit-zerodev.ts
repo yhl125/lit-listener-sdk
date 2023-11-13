@@ -5,7 +5,7 @@ import {
   ECDSAProvider,
   convertWalletClientToAccountSigner,
 } from '@zerodev/sdk';
-import { Hash, createWalletClient, http } from 'viem';
+import { Address, Hash, Hex, createWalletClient, http } from 'viem';
 
 import { CircuitBase } from '@lit-listener-sdk/circuit-base';
 import { ConditionMonitorViem } from '@lit-listener-sdk/circuit-viem';
@@ -18,7 +18,7 @@ import {
   isZeroDevUserOperationAction,
   FetchActionZeroDevUserOperation,
   ZeroDevUserOperationAction,
-  UserOperationCallData,
+  UserOperation,
   IUserOperationLog,
 } from '@lit-listener-sdk/types';
 import { ObjectId } from 'bson';
@@ -70,15 +70,21 @@ export class CircuitZeroDev extends CircuitBase {
             owner: convertWalletClientToAccountSigner(walletClient),
             opts: action.opts,
           });
-          const { hash } = await ecdsaProvider.sendUserOperation(action.userOp);
-          this.userOperationLog(action.id, hash, new Date().toISOString());
-          const transactionHash =
-            await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-          this.transactionLog(
-            action.id,
-            transactionHash,
-            new Date().toISOString(),
-          );
+          if (Array.isArray(action.userOp)) {
+            const userOp = this.userOpsToZeroDevUserOps(action.userOp);
+            await this.sendUserOperationAndLog(
+              ecdsaProvider,
+              userOp,
+              action.id,
+            );
+          } else {
+            const userOp = this.userOpToZeroDevUserOp(action.userOp);
+            await this.sendUserOperationAndLog(
+              ecdsaProvider,
+              userOp,
+              action.id,
+            );
+          }
         } else if (isFetchActionZeroDevUserOperation(action)) {
           const response = await fetch(action.url, action.init);
           const json = await response.json();
@@ -92,28 +98,18 @@ export class CircuitZeroDev extends CircuitBase {
           else transactions = _.get(json, action.responsePath);
 
           if (Array.isArray(transactions)) {
-            const userOps: UserOperationCallData[] = transactions.map(
-              (transaction) => this.viemTransactionToUserOp(transaction),
-            );
-            const { hash } = await ecdsaProvider.sendUserOperation(userOps);
-            this.userOperationLog(action.id, hash, new Date().toISOString());
-            const transactionHash =
-              await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-            this.transactionLog(
+            const userOp = this.viemTransactionsToZeroDevUserOps(transactions);
+            await this.sendUserOperationAndLog(
+              ecdsaProvider,
+              userOp,
               action.id,
-              transactionHash,
-              new Date().toISOString(),
             );
           } else {
-            const userOp = this.viemTransactionToUserOp(transactions);
-            const { hash } = await ecdsaProvider.sendUserOperation(userOp);
-            this.userOperationLog(action.id, hash, new Date().toISOString());
-            const transactionHash =
-              await ecdsaProvider.waitForUserOperationTransaction(hash as Hash);
-            this.transactionLog(
+            const userOp = this.viemTransactionToZeroDevUserOp(transactions);
+            await this.sendUserOperationAndLog(
+              ecdsaProvider,
+              userOp,
               action.id,
-              transactionHash,
-              new Date().toISOString(),
             );
           }
         } else {
@@ -138,13 +134,48 @@ export class CircuitZeroDev extends CircuitBase {
     }
   }
 
-  private viemTransactionToUserOp(
+  private async sendUserOperationAndLog(
+    ecdsaProvider: ECDSAProvider,
+    userOp: ZeroDevUserOperation | ZeroDevUserOperation[],
+    actionId: ObjectId,
+  ) {
+    const { hash } = await ecdsaProvider.sendUserOperation(userOp);
+    this.userOperationLog(actionId, hash, new Date().toISOString());
+    const transactionHash = await ecdsaProvider.waitForUserOperationTransaction(
+      hash as Hash,
+    );
+    this.transactionLog(actionId, transactionHash, new Date().toISOString());
+  }
+
+  private viemTransactionsToZeroDevUserOps(
+    transactions: ViemTransaction[],
+  ): ZeroDevUserOperation[] {
+    return transactions.map((transaction) =>
+      this.viemTransactionToZeroDevUserOp(transaction),
+    );
+  }
+
+  private viemTransactionToZeroDevUserOp(
     transaction: ViemTransaction,
-  ): UserOperationCallData {
+  ): ZeroDevUserOperation {
     return {
       target: transaction.to,
       data: transaction.data ? transaction.data : '0x',
       value: transaction.value ? BigInt(transaction.value) : undefined,
+    };
+  }
+
+  private userOpsToZeroDevUserOps(
+    userOps: UserOperation[],
+  ): ZeroDevUserOperation[] {
+    return userOps.map((userOp) => this.userOpToZeroDevUserOp(userOp));
+  }
+
+  private userOpToZeroDevUserOp(userOp: UserOperation): ZeroDevUserOperation {
+    return {
+      target: userOp.target,
+      data: userOp.data,
+      value: userOp.value ? BigInt(userOp.value) : undefined,
     };
   }
 
@@ -160,4 +191,12 @@ export class CircuitZeroDev extends CircuitBase {
     };
     this.emitAsync(`userOperationLog`, log);
   };
+}
+interface ZeroDevUserOperation {
+  /* the target of the call */
+  target: Address;
+  /* the data passed to the target */
+  data: Hex;
+  /* the amount of native token to send to the target (default: 0) */
+  value?: bigint;
 }

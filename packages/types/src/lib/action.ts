@@ -35,13 +35,13 @@ export interface ViemTransaction {
   value?: bigint | number | string;
 }
 
-export interface UserOperationCallData {
+export interface UserOperation {
   /* the target of the call */
   target: Address;
   /* the data passed to the target */
   data: Hex;
   /* the amount of native token to send to the target (default: 0) */
-  value?: bigint;
+  value?: bigint | number | string;
 }
 
 export class FetchActionViemTransaction implements FetchActionBase {
@@ -148,12 +148,12 @@ export class ZeroDevUserOperationAction implements IAction {
   type: 'zerodev';
   projectId: string;
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
-  userOp: UserOperationCallData | UserOperationCallData[];
+  userOp: UserOperation | UserOperation[];
 
   constructor(args: {
     projectId: string;
     opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
-    userOp: UserOperationCallData | UserOperationCallData[];
+    userOp: UserOperation | UserOperation[];
   }) {
     this.id = new ObjectId();
     this.type = 'zerodev';
