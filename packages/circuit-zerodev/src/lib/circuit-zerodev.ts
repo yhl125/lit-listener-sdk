@@ -63,6 +63,8 @@ export class CircuitZeroDev extends CircuitBase {
     });
 
     try {
+      this.isActionRunning = true;
+
       for (const action of this.actions) {
         if (isZeroDevUserOperationAction(action)) {
           const ecdsaProvider = await ECDSAProvider.init({
@@ -117,12 +119,14 @@ export class CircuitZeroDev extends CircuitBase {
         }
       }
       this.litActionCompletionCount++;
+      this.isActionRunning = false;
       this.circuitLog(
         'action complete',
         `litActionCompletionCount increased to ${this.litActionCompletionCount}`,
         new Date().toISOString(),
       );
     } catch (error) {
+      this.isActionRunning = false;
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);

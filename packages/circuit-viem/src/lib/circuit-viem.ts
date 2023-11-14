@@ -50,6 +50,8 @@ export class CircuitViem extends CircuitBase {
       pkpPubKey: this.pkpPubKey,
     });
     try {
+      this.isActionRunning = true;
+
       for (const action of this.actions) {
         if (isViemTransactionAction(action)) {
           const walletClient = createWalletClient({
@@ -177,12 +179,14 @@ export class CircuitViem extends CircuitBase {
         }
       }
       this.litActionCompletionCount++;
+      this.isActionRunning = false;
       this.circuitLog(
         'action complete',
         `litActionCompletionCount increased to ${this.litActionCompletionCount}`,
         new Date().toISOString(),
       );
     } catch (error) {
+      this.isActionRunning = false;
       let message;
       if (error instanceof Error) message = error.message;
       else message = String(error);

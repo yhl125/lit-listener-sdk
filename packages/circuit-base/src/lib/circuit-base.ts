@@ -97,6 +97,11 @@ export abstract class CircuitBase extends EventEmitter2 {
    * @protected
    */
   protected sessionSigs?: SessionSigs;
+  /**
+   * Boolean for locking action into one concurrent run.
+   * @protected
+   */
+  protected isActionRunning: boolean = false;
 
   /**
    * Creates an instance of Circuit.
@@ -272,6 +277,14 @@ export abstract class CircuitBase extends EventEmitter2 {
     const executionLimitStatus = this.checkExecutionLimitations();
 
     this.conditionExecutedCount++;
+    if (this.isActionRunning) {
+      this.circuitLogSync(
+        'started',
+        'Action already running',
+        new Date().toISOString(),
+      );
+      return;
+    }
     if (
       conditionLogicStatus === RunStatus.ACTION_RUN &&
       executionLimitStatus === RunStatus.ACTION_RUN
@@ -336,10 +349,10 @@ export abstract class CircuitBase extends EventEmitter2 {
       this.startDate && this.endDate
         ? new Date() >= this.startDate && new Date() <= this.endDate
         : this.startDate && !this.endDate
-        ? new Date() >= this.startDate
-        : this.endDate && !this.startDate
-        ? new Date() <= this.endDate
-        : true;
+          ? new Date() >= this.startDate
+          : this.endDate && !this.startDate
+            ? new Date() <= this.endDate
+            : true;
     const withinSuccessfulCompletions = this.maxLitActionCompletions
       ? this.litActionCompletionCount < this.maxLitActionCompletions
       : true;
