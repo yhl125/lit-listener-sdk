@@ -9,6 +9,7 @@ import {
 } from './types';
 
 interface IConditionWithoutId {
+  type: string;
   expectedValue:
     | number
     | string
@@ -26,6 +27,7 @@ export interface ICondition extends IConditionWithoutId {
 }
 
 export interface IWebhookCondition extends IConditionWithoutId {
+  type: 'webhook';
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -34,6 +36,7 @@ export interface IWebhookCondition extends IConditionWithoutId {
 }
 
 export class WebhookCondition implements IWebhookCondition, ICondition {
+  type: 'webhook';
   id: ObjectId;
   url: string;
   init?: RequestInit;
@@ -48,6 +51,7 @@ export class WebhookCondition implements IWebhookCondition, ICondition {
   interval: number;
 
   constructor(args: IWebhookCondition) {
+    this.type = 'webhook';
     this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
@@ -59,6 +63,7 @@ export class WebhookCondition implements IWebhookCondition, ICondition {
 }
 
 export interface IViemContractCondition extends IConditionWithoutId {
+  type: 'viem-contract';
   abi: Abi;
   transport: IViemTransport | IFallbackViemTransport;
   contractAddress?: Address;
@@ -69,6 +74,7 @@ export interface IViemContractCondition extends IConditionWithoutId {
 }
 
 export class ViemContractCondition implements ICondition {
+  type: 'viem-contract';
   id: ObjectId;
   abi: Abi;
   transport: Transport;
@@ -86,6 +92,7 @@ export class ViemContractCondition implements ICondition {
   pollingInterval?: number;
 
   constructor(args: IViemContractCondition) {
+    this.type = 'viem-contract';
     this.id = new ObjectId();
     this.abi = args.abi;
     if (args.transport.type !== 'fallback') {
@@ -104,6 +111,7 @@ export class ViemContractCondition implements ICondition {
 }
 
 export interface IViemEventCondition extends IConditionWithoutId {
+  type: 'viem-event';
   transport: IViemTransport | IFallbackViemTransport;
   address?: Address | Address[];
   event?: AbiEvent;
@@ -113,6 +121,7 @@ export interface IViemEventCondition extends IConditionWithoutId {
 }
 
 export class ViemEventCondition implements ICondition {
+  type: 'viem-event';
   id: ObjectId;
   expectedValue:
     | number
@@ -129,6 +138,7 @@ export class ViemEventCondition implements ICondition {
   pollingInterval?: number;
 
   constructor(args: IViemEventCondition) {
+    this.type = 'viem-event';
     this.id = new ObjectId();
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;

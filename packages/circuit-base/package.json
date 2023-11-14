@@ -1,6 +1,6 @@
 {
   "name": "@lit-listener-sdk/circuit-base",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "dependencies": {},
   "type": "commonjs",
   "main": "./src/index.js",
