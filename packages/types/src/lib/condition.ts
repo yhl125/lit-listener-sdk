@@ -1,9 +1,14 @@
 import { Abi, Address, Transport } from 'viem';
 import { AbiEvent } from 'abitype';
 import { ObjectId } from 'bson';
+import {
+  IViemTransport,
+  IFallbackViemTransport,
+  IViemTransportToTransport,
+  IFallbackViemTransportToTransport,
+} from './types';
 
-export interface ICondition {
-  id: ObjectId;
+interface IConditionWithoutId {
   expectedValue:
     | number
     | string
@@ -16,7 +21,11 @@ export interface ICondition {
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
 }
 
-export interface IWebhookCondition extends ICondition {
+export interface ICondition extends IConditionWithoutId {
+  id: ObjectId;
+}
+
+export interface IWebhookCondition extends IConditionWithoutId {
   url: string;
   init?: RequestInit;
   responsePath: string;
@@ -24,7 +33,7 @@ export interface IWebhookCondition extends ICondition {
   interval: number;
 }
 
-export class WebhookCondition implements IWebhookCondition {
+export class WebhookCondition implements IWebhookCondition, ICondition {
   id: ObjectId;
   url: string;
   init?: RequestInit;
@@ -38,25 +47,7 @@ export class WebhookCondition implements IWebhookCondition {
   matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
   interval: number;
 
-  constructor(args: {
-    url: string;
-    init?: RequestInit;
-    responsePath: string;
-    expectedValue:
-      | number
-      | string
-      | bigint
-      | object
-      | (string | number | bigint | object)[];
-    /**
-     * emittedValue matchOperator expectedValue
-     */
-    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    /**
-     * milliseconds
-     */
-    interval: number;
-  }) {
+  constructor(args: IWebhookCondition) {
     this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
@@ -67,17 +58,17 @@ export class WebhookCondition implements IWebhookCondition {
   }
 }
 
-export interface IViemContractCondition extends ICondition {
+export interface IViemContractCondition extends IConditionWithoutId {
   abi: Abi;
-  transport: Transport;
+  transport: IViemTransport | IFallbackViemTransport;
   contractAddress?: Address;
   eventName?: string;
   eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
-  batch: boolean;
+  batch?: boolean;
   pollingInterval?: number;
 }
 
-export class ViemContractCondition implements IViemContractCondition {
+export class ViemContractCondition implements ICondition {
   id: ObjectId;
   abi: Abi;
   transport: Transport;
@@ -94,28 +85,14 @@ export class ViemContractCondition implements IViemContractCondition {
   batch: boolean;
   pollingInterval?: number;
 
-  constructor(args: {
-    abi: Abi;
-    transport: Transport;
-    expectedValue:
-      | number
-      | string
-      | bigint
-      | object
-      | (string | number | bigint | object)[];
-    /**
-     * emittedValue matchOperator expectedValue
-     */
-    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    contractAddress?: Address;
-    eventName?: string;
-    eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
-    batch?: boolean;
-    pollingInterval?: number;
-  }) {
+  constructor(args: IViemContractCondition) {
     this.id = new ObjectId();
     this.abi = args.abi;
-    this.transport = args.transport;
+    if (args.transport.type !== 'fallback') {
+      this.transport = IViemTransportToTransport(args.transport);
+    } else {
+      this.transport = IFallbackViemTransportToTransport(args.transport);
+    }
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
     this.contractAddress = args.contractAddress;
@@ -126,8 +103,8 @@ export class ViemContractCondition implements IViemContractCondition {
   }
 }
 
-export interface IViemEventCondition extends ICondition {
-  transport: Transport;
+export interface IViemEventCondition extends IConditionWithoutId {
+  transport: IViemTransport | IFallbackViemTransport;
   address?: Address | Address[];
   event?: AbiEvent;
   eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
@@ -135,7 +112,7 @@ export interface IViemEventCondition extends ICondition {
   pollingInterval?: number;
 }
 
-export class ViemEventCondition implements IViemEventCondition {
+export class ViemEventCondition implements ICondition {
   id: ObjectId;
   expectedValue:
     | number
@@ -151,28 +128,15 @@ export class ViemEventCondition implements IViemEventCondition {
   batch: boolean;
   pollingInterval?: number;
 
-  constructor(args: {
-    expectedValue:
-      | number
-      | string
-      | bigint
-      | object
-      | (string | number | bigint | object)[];
-    /**
-     * emittedValue matchOperator expectedValue
-     */
-    matchOperator: '<' | '>' | '==' | '===' | '!==' | '!=' | '>=' | '<=';
-    transport: Transport;
-    address?: Address | Address[];
-    event?: AbiEvent;
-    eventArgs?: readonly unknown[] | Record<string, unknown> | undefined;
-    batch?: boolean;
-    pollingInterval?: number;
-  }) {
+  constructor(args: IViemEventCondition) {
     this.id = new ObjectId();
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
-    this.transport = args.transport;
+    if (args.transport.type !== 'fallback') {
+      this.transport = IViemTransportToTransport(args.transport);
+    } else {
+      this.transport = IFallbackViemTransportToTransport(args.transport);
+    }
     this.address = args.address;
     this.event = args.event;
     this.eventArgs = args.eventArgs;

@@ -113,7 +113,6 @@ export class CircuitViem extends CircuitBase {
                     account,
                     to: tx.to,
                     accessList: tx.accessList,
-                    chain: tx.chain,
                     data: tx.data,
                     gasPrice: tx.gasPrice ? BigInt(tx.gasPrice) : undefined,
                     nonce: tx.nonce,
@@ -123,7 +122,6 @@ export class CircuitViem extends CircuitBase {
                     account,
                     to: tx.to,
                     accessList: tx.accessList,
-                    chain: tx.chain,
                     data: tx.data,
                     maxFeePerGas: tx.maxFeePerGas
                       ? BigInt(tx.maxFeePerGas)
@@ -147,7 +145,6 @@ export class CircuitViem extends CircuitBase {
                   account,
                   to: transactions.to,
                   accessList: transactions.accessList,
-                  chain: transactions.chain,
                   data: transactions.data,
                   gasPrice: transactions.gasPrice
                     ? BigInt(transactions.gasPrice)
@@ -161,7 +158,6 @@ export class CircuitViem extends CircuitBase {
                   account,
                   to: transactions.to,
                   accessList: transactions.accessList,
-                  chain: transactions.chain,
                   data: transactions.data,
                   maxFeePerGas: transactions.maxFeePerGas
                     ? BigInt(transactions.maxFeePerGas)

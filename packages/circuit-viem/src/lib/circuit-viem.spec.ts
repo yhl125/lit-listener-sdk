@@ -6,39 +6,44 @@ import {
 } from '@lit-listener-sdk/types';
 import { CircuitViem } from './circuit-viem';
 import { CONTROLLER_AUTHSIG, PKP_PUBKEY } from 'lit.config.json';
-import { defineChain, parseAbi, http } from 'viem';
-import { goerli } from 'viem/chains';
+import { parseAbi } from 'viem';
 
 jest.setTimeout(40000);
+
+export const chronicle = {
+  chainId: 175177,
+  customChain: true,
+  chainConstants: {
+    id: 175177,
+    name: 'Chronicle',
+    network: 'chronicle',
+    nativeCurrency: {
+      decimals: 18,
+      name: 'LIT',
+      symbol: 'LIT',
+    },
+    rpcUrls: {
+      default: {
+        http: ['https://chain-rpc.litprotocol.com/http'],
+      },
+      public: {
+        http: ['https://chain-rpc.litprotocol.com/http'],
+      },
+    },
+  },
+}
 
 describe('CircuitViem', () => {
   it('circuit without condition', async () => {
     // Mock the event callback to see that:
     const callback = jest.fn();
 
-    const chronicle = defineChain({
-      id: 175177,
-      name: 'Chronicle',
-      network: 'chronicle',
-      nativeCurrency: {
-        decimals: 18,
-        name: 'LIT',
-        symbol: 'LIT',
-      },
-      rpcUrls: {
-        default: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-        public: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-      },
-    });
     const transactionAction = new ViemTransactionAction({
       chain: chronicle,
-      transport: http(),
+      transport: { type: 'http' },
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
+      type: 'viem',
     });
 
     // This is a factory function
@@ -72,36 +77,22 @@ describe('CircuitViem', () => {
     // Mock the event callback to see that:
     const callback = jest.fn();
 
-    const chronicle = defineChain({
-      id: 175177,
-      name: 'Chronicle',
-      network: 'chronicle',
-      nativeCurrency: {
-        decimals: 18,
-        name: 'LIT',
-        symbol: 'LIT',
-      },
-      rpcUrls: {
-        default: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-        public: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-      },
-    });
     const transactionAction = new ViemTransactionAction({
       chain: chronicle,
-      transport: http(),
+      transport: { type: 'http' },
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
+      type: 'viem',
     });
     const abi = parseAbi([
       'event Transfer(address indexed from, address indexed to, uint256 amount)',
     ]);
     const contractCondition: ViemContractCondition = new ViemContractCondition({
       abi,
-      transport: http('https://ethereum-goerli.publicnode.com'),
+      transport: {
+        type: 'http',
+        url: 'https://ethereum-goerli.publicnode.com',
+      },
       expectedValue: 0n,
       matchOperator: '===',
       // goerli weth
@@ -143,30 +134,12 @@ describe('CircuitViem', () => {
   it('circuit with Webhook condition', async () => {
     // Mock the event callback to see that:
     const callback = jest.fn();
-
-    const chronicle = defineChain({
-      id: 175177,
-      name: 'Chronicle',
-      network: 'chronicle',
-      nativeCurrency: {
-        decimals: 18,
-        name: 'LIT',
-        symbol: 'LIT',
-      },
-      rpcUrls: {
-        default: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-        public: {
-          http: ['https://chain-rpc.litprotocol.com/http'],
-        },
-      },
-    });
     const transactionAction = new ViemTransactionAction({
       chain: chronicle,
-      transport: http(),
+      transport: { type: 'http' },
       to: '0x016013f36abb93F6304eC0aBAbe5b0F3b6636579',
       value: 0n,
+      type: 'viem',
     });
 
     const webhookCondition = new WebhookCondition({
@@ -211,14 +184,15 @@ describe('CircuitViem', () => {
     const callback = jest.fn();
 
     const fetchAction = new FetchActionViemTransaction({
-      chain: goerli,
-      transport: http('https://ethereum-goerli.publicnode.com'),
+      chain: { chainId: 5, customChain: false },
+      transport: { type: 'http' },
       url: 'https://goerli.api.0x.org/swap/v1/quote?buyToken=WETH&sellToken=ETH&buyAmount=100',
       init: {
         headers: { '0x-api-key': '' },
       },
       responsePath: '',
       ignoreGas: true,
+      type: 'fetch-viem',
     });
 
     // This is a factory function

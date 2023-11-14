@@ -2,13 +2,21 @@ import { ValidatorProviderParamsOpts } from '@zerodev/sdk';
 import { ECDSAValidatorParams } from '@zerodev/sdk/dist/types/kernel-zerodev/validator/ecdsa-validator';
 import { ObjectId } from 'bson';
 import { AccessList, Address, Chain, Hex, Transport } from 'viem';
+import {
+  IFallbackViemTransport,
+  IFallbackViemTransportToTransport,
+  IViemChain,
+  IViemChainToChain,
+  IViemTransport,
+  IViemTransportToTransport,
+} from './types';
 
 export interface IAction {
   id: ObjectId;
   type: string;
 }
 
-export interface FetchActionBase extends IAction {
+export interface FetchActionBase {
   /**
    * The base URL of the API endpoint.
    */
@@ -26,7 +34,6 @@ export interface FetchActionBase extends IAction {
 export interface ViemTransaction {
   to: Address;
   accessList?: AccessList;
-  chain?: Chain;
   data?: Hex;
   gasPrice?: bigint | number | string;
   maxFeePerGas?: bigint | number | string;
@@ -44,7 +51,14 @@ export interface UserOperation {
   value?: bigint | number | string;
 }
 
-export class FetchActionViemTransaction implements FetchActionBase {
+export interface IFetchActionViemTransaction extends FetchActionBase {
+  type: 'fetch-viem';
+  chain: IViemChain;
+  transport: IViemTransport | IFallbackViemTransport;
+  ignoreGas?: boolean;
+}
+
+export class FetchActionViemTransaction implements IAction, FetchActionBase {
   id: ObjectId;
   url: string;
   init?: RequestInit;
@@ -54,23 +68,27 @@ export class FetchActionViemTransaction implements FetchActionBase {
   transport: Transport;
   ignoreGas?: boolean;
 
-  constructor(args: {
-    url: string;
-    init?: RequestInit;
-    responsePath: string;
-    chain: Chain;
-    transport: Transport;
-    ignoreGas?: boolean;
-  }) {
+  constructor(args: IFetchActionViemTransaction) {
     this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
     this.type = 'fetch-viem';
-    this.chain = args.chain;
-    this.transport = args.transport;
+    this.chain = IViemChainToChain(args.chain);
+    if (args.transport.type !== 'fallback') {
+      this.transport = IViemTransportToTransport(args.transport);
+    } else {
+      this.transport = IFallbackViemTransportToTransport(args.transport);
+    }
     this.ignoreGas = args.ignoreGas;
   }
+}
+
+export interface IViemTransactionAction extends ViemTransaction {
+  type: 'viem';
+  chain: IViemChain;
+  transport: IViemTransport | IFallbackViemTransport;
+  ignoreGas?: boolean;
 }
 
 export class ViemTransactionAction implements IAction, ViemTransaction {
@@ -88,19 +106,7 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
   transport: Transport;
   ignoreGas?: boolean;
 
-  constructor(args: {
-    to: Address;
-    chain: Chain;
-    transport: Transport;
-    accessList?: AccessList;
-    data?: Hex;
-    gasPrice?: bigint | number | string;
-    maxFeePerGas?: bigint | number | string;
-    maxPriorityFeePerGas?: bigint | number | string;
-    nonce?: number;
-    value?: bigint | number | string;
-    ignoreGas?: boolean;
-  }) {
+  constructor(args: IViemTransactionAction) {
     this.id = new ObjectId();
     this.to = args.to;
     this.accessList = args.accessList;
@@ -111,13 +117,25 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
     this.nonce = args.nonce;
     this.value = args.value;
     this.type = 'viem';
-    this.chain = args.chain;
-    this.transport = args.transport;
+    this.chain = IViemChainToChain(args.chain);
+    if (args.transport.type !== 'fallback') {
+      this.transport = IViemTransportToTransport(args.transport);
+    } else {
+      this.transport = IFallbackViemTransportToTransport(args.transport);
+    }
     this.ignoreGas = args.ignoreGas;
   }
 }
 
-export class FetchActionZeroDevUserOperation implements FetchActionBase {
+export interface IFetchActionZeroDevUserOperation extends FetchActionBase {
+  type: 'fetch-zerodev';
+  projectId: string;
+  opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
+}
+
+export class FetchActionZeroDevUserOperation
+  implements IAction, FetchActionBase
+{
   id: ObjectId;
   url: string;
   init?: RequestInit;
@@ -126,13 +144,7 @@ export class FetchActionZeroDevUserOperation implements FetchActionBase {
   projectId: string;
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
 
-  constructor(args: {
-    url: string;
-    responsePath: string;
-    projectId: string;
-    init?: RequestInit;
-    opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
-  }) {
+  constructor(args: IFetchActionZeroDevUserOperation) {
     this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
@@ -143,6 +155,13 @@ export class FetchActionZeroDevUserOperation implements FetchActionBase {
   }
 }
 
+export interface IZeroDevUserOperationAction {
+  type: 'zerodev';
+  projectId: string;
+  opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
+  userOp: UserOperation | UserOperation[];
+}
+
 export class ZeroDevUserOperationAction implements IAction {
   id: ObjectId;
   type: 'zerodev';
@@ -150,11 +169,7 @@ export class ZeroDevUserOperationAction implements IAction {
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
   userOp: UserOperation | UserOperation[];
 
-  constructor(args: {
-    projectId: string;
-    opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
-    userOp: UserOperation | UserOperation[];
-  }) {
+  constructor(args: IZeroDevUserOperationAction) {
     this.id = new ObjectId();
     this.type = 'zerodev';
     this.projectId = args.projectId;

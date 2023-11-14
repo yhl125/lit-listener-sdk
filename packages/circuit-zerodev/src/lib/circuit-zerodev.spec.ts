@@ -20,6 +20,7 @@ describe('circuitZerodev', () => {
         data: '0x',
         value: 100n,
       },
+      type: 'zerodev',
     });
 
     const fetchAction = new FetchActionZeroDevUserOperation({
@@ -29,6 +30,7 @@ describe('circuitZerodev', () => {
         headers: { '0x-api-key': '' },
       },
       responsePath: '',
+      type: 'fetch-zerodev',
     });
 
     // This is a factory function
