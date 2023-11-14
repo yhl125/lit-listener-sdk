@@ -27,6 +27,7 @@ export interface ICondition extends IConditionWithoutId {
 }
 
 export interface IWebhookCondition extends IConditionWithoutId {
+  id?: ObjectId;
   type: 'webhook';
   url: string;
   init?: RequestInit;
@@ -52,7 +53,8 @@ export class WebhookCondition implements IWebhookCondition, ICondition {
 
   constructor(args: IWebhookCondition) {
     this.type = 'webhook';
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -63,6 +65,7 @@ export class WebhookCondition implements IWebhookCondition, ICondition {
 }
 
 export interface IViemContractCondition extends IConditionWithoutId {
+  id?: ObjectId;
   type: 'viem-contract';
   abi: Abi;
   transport: IViemTransport | IFallbackViemTransport;
@@ -93,7 +96,8 @@ export class ViemContractCondition implements ICondition {
 
   constructor(args: IViemContractCondition) {
     this.type = 'viem-contract';
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.abi = args.abi;
     if (args.transport.type !== 'fallback') {
       this.transport = IViemTransportToTransport(args.transport);
@@ -111,6 +115,7 @@ export class ViemContractCondition implements ICondition {
 }
 
 export interface IViemEventCondition extends IConditionWithoutId {
+  id?: ObjectId;
   type: 'viem-event';
   transport: IViemTransport | IFallbackViemTransport;
   address?: Address | Address[];
@@ -139,7 +144,8 @@ export class ViemEventCondition implements ICondition {
 
   constructor(args: IViemEventCondition) {
     this.type = 'viem-event';
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.expectedValue = args.expectedValue;
     this.matchOperator = args.matchOperator;
     if (args.transport.type !== 'fallback') {

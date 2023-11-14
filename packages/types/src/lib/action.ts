@@ -52,6 +52,7 @@ export interface UserOperation {
 }
 
 export interface IFetchActionViemTransaction extends FetchActionBase {
+  id?: ObjectId;
   type: 'fetch-viem';
   chain: IViemChain;
   transport: IViemTransport | IFallbackViemTransport;
@@ -69,7 +70,8 @@ export class FetchActionViemTransaction implements IAction, FetchActionBase {
   ignoreGas?: boolean;
 
   constructor(args: IFetchActionViemTransaction) {
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -85,6 +87,7 @@ export class FetchActionViemTransaction implements IAction, FetchActionBase {
 }
 
 export interface IViemTransactionAction extends ViemTransaction {
+  id?: ObjectId;
   type: 'viem';
   chain: IViemChain;
   transport: IViemTransport | IFallbackViemTransport;
@@ -107,7 +110,8 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
   ignoreGas?: boolean;
 
   constructor(args: IViemTransactionAction) {
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.to = args.to;
     this.accessList = args.accessList;
     this.data = args.data;
@@ -128,6 +132,7 @@ export class ViemTransactionAction implements IAction, ViemTransaction {
 }
 
 export interface IFetchActionZeroDevUserOperation extends FetchActionBase {
+  id?: ObjectId;
   type: 'fetch-zerodev';
   projectId: string;
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
@@ -145,7 +150,8 @@ export class FetchActionZeroDevUserOperation
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
 
   constructor(args: IFetchActionZeroDevUserOperation) {
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.url = args.url;
     this.init = args.init;
     this.responsePath = args.responsePath;
@@ -156,6 +162,7 @@ export class FetchActionZeroDevUserOperation
 }
 
 export interface IZeroDevUserOperationAction {
+  id?: ObjectId;
   type: 'zerodev';
   projectId: string;
   opts?: ValidatorProviderParamsOpts<ECDSAValidatorParams>;
@@ -170,7 +177,8 @@ export class ZeroDevUserOperationAction implements IAction {
   userOp: UserOperation | UserOperation[];
 
   constructor(args: IZeroDevUserOperationAction) {
-    this.id = new ObjectId();
+    if (args.id) this.id = args.id;
+    else this.id = new ObjectId();
     this.type = 'zerodev';
     this.projectId = args.projectId;
     this.opts = args.opts;
