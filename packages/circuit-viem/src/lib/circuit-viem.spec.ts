@@ -88,6 +88,7 @@ describe('CircuitViem', () => {
       'event Transfer(address indexed from, address indexed to, uint256 amount)',
     ]);
     const contractCondition: ViemContractCondition = new ViemContractCondition({
+      type: 'viem-contract',
       abi,
       transport: {
         type: 'http',
@@ -143,6 +144,7 @@ describe('CircuitViem', () => {
     });
 
     const webhookCondition = new WebhookCondition({
+      type: 'webhook',
       url: 'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd',
       responsePath: 'ethereum.usd',
       expectedValue: 1600,
