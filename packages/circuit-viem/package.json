@@ -1,6 +1,6 @@
 {
   "name": "@lit-listener-sdk/circuit-viem",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "dependencies": {
     "tslib": "^2.3.0"
   },
