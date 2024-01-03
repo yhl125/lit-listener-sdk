@@ -3602,7 +3602,7 @@
     js-yaml "^3.10.0"
     tslib "^2.4.0"
 
-"@zerodev/sdk@^4.2.1":
+"@zerodev/sdk@^4.5.4":
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/@zerodev/sdk/-/sdk-4.5.4.tgz#82053b400947a5d70d0a7db31bb66790c030f72a"
   integrity sha512-L83sCRc9VtjRqo9Qvx+yLJm95/taLk70USid7bEDY88IiVoVUiD/n6bWVoX8lWpbxWL26yPkUrcX3r5JBhJdWg==
@@ -7129,16 +7129,15 @@ pkg-types@^1.0.3:
     mlly "^1.2.0"
     pathe "^1.1.0"
 
-pkp-viem@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/pkp-viem/-/pkp-viem-3.0.2.tgz#fa78fe11953740d3816fb708cad64ea87503b506"
-  integrity sha512-9wxxawXh29YOThqALzYtHIg6cmZNaY1ynduEix0FPu5defACM+ZNgnusw8hBOAWtltRoK+V2wCCjgwo9FIPppQ==
+pkp-viem@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/pkp-viem/-/pkp-viem-3.0.3.tgz#572f9eb552d278ad39a3d0312351169ff90a9928"
+  integrity sha512-/wciL1pubhZRYC0gVMZZ0wPcBYNQPEHHC5z138rDMOtZXEETQ7XClie2/uHF72BLQpRyU3fF48UhaUJOta7pew==
   dependencies:
     "@lit-protocol/lit-node-client" "^3.0.27"
     "@lit-protocol/pkp-base" "^3.0.27"
     "@lit-protocol/types" "^3.0.27"
-    ts-node "^10.9.2"
-    viem "^1.21.4"
+    viem "^1.19.0"
 
 pngjs@^5.0.0:
   version "5.0.0"
@@ -7911,7 +7910,7 @@ ts-node@10.9.1:
     v8-compile-cache-lib "^3.0.1"
     yn "3.1.1"
 
-ts-node@^10.9.1, ts-node@^10.9.2:
+ts-node@^10.9.1:
   version "10.9.2"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-10.9.2.tgz#70f021c9e185bccdca820e26dc413805c101c71f"
   integrity sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==
@@ -8213,7 +8212,7 @@ varuint-bitcoin@^1.1.2:
   dependencies:
     safe-buffer "^5.1.1"
 
-viem@^1.19.0, viem@^1.21.4, viem@^1.5.3:
+viem@^1.19.0, viem@^1.5.3:
   version "1.21.4"
   resolved "https://registry.yarnpkg.com/viem/-/viem-1.21.4.tgz#883760e9222540a5a7e0339809202b45fe6a842d"
   integrity sha512-BNVYdSaUjeS2zKQgPs+49e5JKocfo60Ib2yiXOWBT6LuVxY1I/6fFX3waEtpXvL1Xn4qu+BVitVtMh9lyThyhQ==
